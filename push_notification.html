@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CleverTap Push Permission</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script type="text/javascript">
+      var clevertap = window.clevertap || {
+        event: [],
+        profile: [],
+        account: [],
+        onUserLogin: [],
+        notifications: [],
+        privacy: []
+      };
+
+      clevertap.account.push({ id: "TEST-98R-R54-5Z6Z" });
+      clevertap.privacy.push({ optOut: false });
+      clevertap.privacy.push({ useIP: false });
+
+      (function () {
+        var wzrk = document.createElement("script");
+        wzrk.type = "text/javascript";
+        wzrk.async = true;
+        wzrk.src =
+          (document.location.protocol === "https:"
+            ? "https://d2r1yp2w7bby2u.cloudfront.net"
+            : "http://static.clevertap.com") + "/js/clevertap.min.js";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(wzrk, s);
+      })();
+    </script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        background: #f5f5f5;
+      }
+      button {
+        padding: 14px 24px;
+        font-size: 16px;
+        background-color: #f28046;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+
+  <body>
+    <button onclick="askPushPermission()">Push Permission</button>
+
+    <script>
+      function askPushPermission() {
+        clevertap.notifications.push({
+          titleText: "Would you like to receive Push Notifications?",
+          bodyText: "We promise to only send you relevant content and give you updates on your transactions",
+          okButtonText: "Sign me up!",
+          rejectButtonText: "No thanks",
+          okButtonColor: "#F28046",
+          askAgainTimeInSeconds: 5,
+          serviceWorkerPath: "./clevertap_sw.js"
+        });
+      }
+    </script>
+
+    <script>
+      (function () {
+        // Retrieve the last known permission state from local storage
+        // This prevents duplicate events on page reload
+        var lastLoggedPerm = localStorage.getItem('ct_last_perm');
+        
+        console.log('Initial Notification.permission =', Notification.permission);
+        console.log('Last Logged Permission =', lastLoggedPerm);
+
+        function handlePermissionChange(newPerm) {
+          console.log('Current permission state:', newPerm);
+
+          // ONLY proceed if the state has actually changed from what we last recorded
+          if (newPerm !== lastLoggedPerm) {
+             console.log('State changed or first run. Sending event to CleverTap.');
+             
+             if (newPerm === 'granted') {
+               clevertap.event.push('Notification enabled');
+             } else if (newPerm === 'denied' || newPerm === 'default') {
+               // Only log disabled if it was previously enabled or this is the first explicit check
+               // You can adjust this logic if you want to track "default" differently
+               clevertap.event.push('Notification disabled');
+             }
+
+             // Update the local storage with the new state
+             localStorage.setItem('ct_last_perm', newPerm);
+             lastLoggedPerm = newPerm; 
+          } else {
+             console.log('Permission state is unchanged (' + newPerm + '). No event sent.');
+          }
+        }
+
+        if (navigator.permissions && navigator.permissions.query) {
+          try {
+            navigator.permissions.query({ name: 'notifications' })
+              .then(function (permissionStatus) {
+                // Check immediately on load
+                handlePermissionChange(permissionStatus.state);
+                
+                // Listen for future changes
+                permissionStatus.onchange = function () {
+                  handlePermissionChange(this.state);
+                };
+              })
+              .catch(function (err) {
+                console.warn('Permissions.query for notifications failed:', err);
+                startPollingFallback();
+              });
+          } catch (e) {
+            console.warn('Permissions API threw:', e);
+            startPollingFallback();
+          }
+        } else {
+          startPollingFallback();
+        }
+
+        var pollIntervalId = null;
+
+        function startPollingFallback() {
+          if (pollIntervalId) return;
+          var last = Notification.permission;
+          // Run the check once immediately for fallback browsers
+          handlePermissionChange(last);
+
+          pollIntervalId = setInterval(function () {
+            var current = Notification.permission;
+            if (current !== last) {
+              last = current;
+              handlePermissionChange(current);
+            }
+          }, 1500);
+        }
+
+        window.addEventListener('beforeunload', function () {
+          if (pollIntervalId) {
+            clearInterval(pollIntervalId);
+            pollIntervalId = null;
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

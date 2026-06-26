@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RudderStack Sample</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ================= RudderStack Browser SDK (LEGACY ONLY) ================= -->
+  <script type="text/javascript">
+    (function () {
+      window.rudderanalytics = window.rudderanalytics || [];
+      var methods = [
+        "load",
+        "page",
+        "track",
+        "identify",
+        "alias",
+        "group",
+        "reset",
+        "ready"
+      ];
+
+      for (var i = 0; i < methods.length; i++) {
+        var method = methods[i];
+        window.rudderanalytics[method] = (function (m) {
+          return function () {
+            window.rudderanalytics.push(
+              [m].concat(Array.prototype.slice.call(arguments))
+            );
+          };
+        })(method);
+      }
+
+      var script = document.createElement("script");
+      script.async = true;
+      script.src = "https://cdn.rudderlabs.com/v3/legacy/rsa.min.js";
+      script.setAttribute(
+        "data-rsa-write-key",
+        "38TDLwiwW7MqH6RhxU1xJPijW9x"
+      );
+
+      document.head.appendChild(script);
+
+      window.rudderanalytics.load(
+        "38TDLwiwW7MqH6RhxU1xJPijW9x",
+        "https://clevertapof.dataplane.rudderstack.com"
+      );
+    })();
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      background: #f5f5f5;
+      gap: 20px;
+    }
+
+    button {
+      padding: 14px 24px;
+      font-size: 16px;
+      background-color: #f28046;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button onclick="onButtonClick()">Test Button</button>
+
+  <!-- ================= RudderStack Page Event ================= -->
+  <script>
+    rudderanalytics.page(
+      "Cart",
+      "Cart Viewed",
+      {
+        environment: "production"
+      },
+      function () {
+        console.log("Page event sent successfully");
+      }
+    );
+    rudderanalytics.page("", "Checkout Page");
+  </script>
+
+  <!-- ================= Button Click Event ================= -->
+  <script>
+    function onButtonClick() {
+      rudderanalytics.track(
+        "Button Clicked",
+        {
+          button_name: "Test Button"
+        },
+        function () {
+          console.log("Track event sent");
+        }
+      );
+    }
+  </script>
+
+</body>
+</html>

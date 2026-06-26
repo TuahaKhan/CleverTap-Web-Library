@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Native Display</title>
+    <script type="text/javascript">
+        var clevertap = { event: [], profile: [], account: [], onUserLogin: [], region:"in1", notifications: [], privacy: [] };
+        // Replace with the CLEVERTAP_ACCOUNT_ID from your Dashboard -> Settings page
+        clevertap.account.push({ "id": "98R-R54-5Z6Z" });
+
+        clevertap.privacy.push({ optOut: false }); // Set the flag to true if the user opts out of sharing their data
+        clevertap.privacy.push({ useIP: true }); // Set the flag to true if the user agrees to share their IP data
+
+        (function () {
+            var wzrk = document.createElement('script');
+            wzrk.type = 'text/javascript';
+            wzrk.async = true;
+            wzrk.src = ('https:' == document.location.protocol ? 'https://d2r1yp2w7bby2u.cloudfront.net' : 'http://static.clevertap.com') + '/js/clevertap.min.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(wzrk, s);
+        })();
+        clevertap.event.push('Page Viewed', {
+            "Page Name": document.title,
+            "Page URL": window.location.href
+        });
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0 5%; /* Set a general 5% padding on both sides */
+        }
+
+        .banner {
+            width: 90%; /* Adjusting width for the main content */
+            margin: auto; /* Center aligning the content */
+            overflow: hidden;
+        }
+
+        .big-banner {
+            width: 100%;
+            height: 315px; /* Maintain the height of the big banner */
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #small-banners {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .small-banner {
+            width: calc(30% - 20px); /* Adjusted width for uniform sizing */
+            height: 200px; /* Fixed height for small banners */
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .small-banner img {
+            width: 100%;
+            height: 100%; /* Maintain aspect ratio */
+            object-fit: cover; /* Ensure image covers the space */
+            display: block;
+        }
+
+        .button-container {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .button-container button {
+            width: 30%; /* Equal width for buttons */
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    </style>
+
+    <script>
+        var images = [
+            "https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_640.jpg",
+            "https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+            "https://cdn.pixabay.com/photo/2023/07/21/16/06/ai-generated-8141887_640.jpg"
+        ];
+
+        function pushCleverTapEvent(eventName, eventProperties) {
+            clevertap.event.push(eventName, eventProperties);
+        }
+
+        function changeImage(button, bannerId) {
+            var img = document.querySelector(`#${bannerId} img`);
+            var index = parseInt(bannerId.split("-")[2]) - 1;
+            img.src = images[index];
+            
+            pushCleverTapEvent(button.textContent + ' Clicked', { "Banner Number": bannerId.split("-")[2] });
+            
+            button.classList.add('clicked');
+            setTimeout(function () {
+                button.classList.remove('clicked');
+            }, 500);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var buttons = document.querySelectorAll('.button-container button');
+            buttons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    changeImage(button, button.parentElement.parentElement.id);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Web Native Display</h1>
+
+    <div class="banner">
+        <img class="big-banner" src="https://1.bp.blogspot.com/-kK7Fxm7U9o0/YN0bSIwSLvI/AAAAAAAACFk/aF4EI7XU_ashruTzTIpifBfNzb4thUivACLcBGAsYHQ/s1280/222.jpg" alt="Scenic Banner Image">
+    </div>
+
+    <div id="small-banners">
+        <div class="small-banner" id="small-banner-1">
+            <img src="https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_640.jpg" alt="Small Banner 1">
+            <div class="button-container">
+                <button onclick="changeImage(this, 'small-banner-1')">Banner</button>
+                <button onclick="changeImage(this, 'small-banner-1')">Carousel</button>
+                <button onclick="changeImage(this, 'small-banner-1')">Custom</button>
+            </div>
+        </div>
+        <div class="small-banner" id="small-banner-2">
+            <img src="https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500" alt="Small Banner 2">
+            <div class="button-container">
+                <button onclick="changeImage(this, 'small-banner-2')">Banner</button>
+                <button onclick="changeImage(this, 'small-banner-2')">Carousel</button>
+                <button onclick="changeImage(this, 'small-banner-2')">Custom</button>
+            </div>
+        </div>
+        <div class="small-banner" id="small-banner-3">
+            <img src="https://cdn.pixabay.com/photo/2023/07/21/16/06/ai-generated-8141887_640.jpg" alt="Small Banner 3">
+            <div class="button-container">
+                <button onclick="changeImage(this, 'small-banner-3')">Banner</button>
+                <button onclick="changeImage(this, 'small-banner-3')">Carousel</button>
+                <button onclick="changeImage(this, 'small-banner-3')">Custom</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Sales: Best Online Electronics Shopping Store in India</title>
+<!-- ── CleverTap Visual Editor Prerequisites ── -->
+<!-- NOTE: frame-ancestors CSP must be set as an HTTP response header on your server, not via meta tag -->
+<!-- Add this to your server config:
+     Cross-Origin-Opener-Policy: same-origin-allow-popups
+     Cross-Origin-Embedder-Policy: unsafe-none
+     Content-Security-Policy: frame-ancestors 'self'
+-->
+
+<!-- 2. Cross-Origin-Opener-Policy: allows popups from same-origin (required for Visual Editor) -->
+<meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+
+<!-- 3. Cross-Origin-Embedder-Policy: unsafe-none ensures no restrictions on embedding external resources -->
+<meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="text/javascript">
+  // CleverTap SDK Initialization
+  var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [] };
+
+  clevertap.account.push({ "id": "WW6-988-RW7Z" });
+  clevertap.privacy.push({ optOut: false });
+  clevertap.privacy.push({ useIP: false });
+
+  (function () {
+    var wzrk = document.createElement('script');
+    wzrk.type = 'text/javascript';
+    wzrk.async = true;
+    wzrk.src = (document.location.protocol === 'https:' ? 'https://d2r1yp2w7bby2u.cloudfront.net' : 'http://static.clevertap.com') + '/js/clevertap.min.js';
+    wzrk.onload = function () {
+      // SDK fully loaded; now safe to fire profile + event.
+      try {
+        // SDK version check
+        if (clevertap.getSDKVersion) {
+          console.log('[CleverTap] SDK Version:', clevertap.getSDKVersion());
+        }
+
+        // Randomly assign Even or Odd cohort
+        var cohort = Math.random() < 0.5 ? 'Even' : 'Odd';
+        console.log('[CleverTap] Assigned cohort:', cohort);
+
+        // Push user profile property
+        clevertap.profile.push({
+          "Site": {
+            "User Cohort": cohort
+          }
+        });
+
+        // Push Homepage Viewed event
+        clevertap.event.push("Homepage Viewed", {
+          "Page": "Home",
+          "User Cohort": cohort
+        });
+
+      } catch (e) {
+        console.warn('[CleverTap] Error during init:', e);
+      }
+    };
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(wzrk, s);
+  })();
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',sans-serif;background:#f0f0f0;color:#222;font-size:14px}
+
+/* ── HEADER ── */
+header{background:#fff;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:300}
+.hd-top{max-width:1280px;margin:auto;display:flex;align-items:center;gap:16px;padding:12px 20px}
+
+/* Logo - italic serif matching real site */
+.vs-logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0}
+.vs-logo svg{height:34px;width:auto}
+
+.loc{display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;color:#333}
+.loc-icon{width:16px;height:16px;flex-shrink:0;color:#555}
+.loc-city{font-size:13px;font-weight:500;color:#111;line-height:1.2}
+.loc-change{font-size:11px;color:#0057a8;border-bottom:1px dashed #0057a8;cursor:pointer;line-height:1.4}
+
+.search{flex:1;position:relative}
+.search input{width:100%;background:#f5f5f5;border:1.5px solid #ddd;border-radius:24px;padding:10px 44px 10px 18px;font-size:13.5px;font-family:'Roboto',sans-serif;outline:none;transition:border-color .2s,background .2s}
+.search input:focus{border-color:#999;background:#fff}
+.search input::placeholder{color:#999}
+.search-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;display:flex;align-items:center;color:#666}
+
+.hd-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.hbtn{display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:12.5px;font-weight:500;color:#333;background:none;border:none;cursor:pointer;border-radius:6px;text-decoration:none;transition:background .15s;white-space:nowrap}
+.hbtn:hover{background:#f5f5f5}
+.hbtn svg{width:16px;height:16px;flex-shrink:0}
+.icon-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;transition:background .15s;color:#333;text-decoration:none}
+.icon-btn:hover{background:#f5f5f5}
+.icon-btn svg{width:20px;height:20px}
+
+/* ── NAV ── */
+.hd-nav{border-top:1px solid #ebebeb}
+.nav-inner{max-width:1280px;margin:auto;display:flex;align-items:center;padding:0 20px;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nlink{color:#333;font-size:13px;font-weight:500;padding:11px 14px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:border-color .15s,color .15s;text-decoration:none;display:block;flex-shrink:0}
+.nlink:hover{color:#111;border-bottom-color:#222}
+.nlink.loyalty{color:#c0392b;font-weight:600}
+
+/* ── HERO CAROUSEL ── */
+.carousel-wrap{max-width:1280px;margin:14px auto 0;padding:0 20px;position:relative}
+.carousel{position:relative;border-radius:6px;overflow:hidden;height:390px;background:#111;cursor:pointer}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease}
+.slide.active{opacity:1}
+.slide img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+
+.carr-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:20;background:rgba(255,255,255,.93);border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#333;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:background .2s}
+.carr-btn:hover{background:#fff}
+.carr-btn.left{left:-16px}
+.carr-btn.right{right:-16px}
+
+.dots{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:10}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.45);border:none;cursor:pointer;transition:all .3s;padding:0}
+.dot.on{background:#fff;width:22px;border-radius:4px}
+
+/* ── BANK OFFERS ── */
+.banks{max-width:1280px;margin:14px auto 0;padding:0 20px}
+.banks-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.banks-scroll::-webkit-scrollbar{display:none}
+.bcard{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;min-width:270px;cursor:pointer;transition:box-shadow .2s;text-decoration:none}
+.bcard:hover{box-shadow:0 3px 12px rgba(0,0,0,.1)}
+.blogo{flex-shrink:0;width:68px;height:38px;object-fit:contain}
+.btext{font-size:11.5px;color:#333;line-height:1.5}
+.btext strong{display:block;font-size:12px;font-weight:600;color:#222}
+.tnc{font-size:10px;color:#aaa;margin-top:1px}
+
+/* ── SHOP BY CATEGORY ── */
+.cat-wrap{max-width:1280px;margin:14px auto 0;padding:0 20px}
+.cat-inner{background:#fff;border-radius:8px;display:flex;overflow-x:auto;scrollbar-width:none;padding:14px 10px}
+.cat-inner::-webkit-scrollbar{display:none}
+.citem{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:104px;flex-shrink:0;padding:8px;border-radius:8px;cursor:pointer;text-decoration:none;color:#333;transition:background .15s}
+.citem:hover{background:#f8f8f8}
+.citem img{width:90px;height:56px;object-fit:contain}
+.citem span{font-size:11.5px;font-weight:500;text-align:center;line-height:1.3;color:#333}
+
+/* ── SECTION WRAPPER ── */
+.sec{max-width:1280px;margin:18px auto 0;padding:0 20px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-hdr h2{font-size:17px;font-weight:700;color:#111}
+.sec-hdr a{font-size:12px;color:#0057a8;font-weight:600;text-decoration:none}
+.sec-hdr a:hover{text-decoration:underline}
+
+/* ── PRODUCT CARDS ── */
+.pgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pcard{background:#fff;border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;cursor:pointer;transition:box-shadow .2s;text-decoration:none;color:inherit;display:flex;flex-direction:column}
+.pcard:hover{box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.pimg-wrap{background:#f8f8f8;height:170px;display:flex;align-items:center;justify-content:center;position:relative;padding:10px}
+.pimg-wrap img{max-height:150px;max-width:100%;object-fit:contain}
+.disc{position:absolute;top:8px;left:8px;background:#c0392b;color:#fff;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:3px}
+.pinfo{padding:10px 12px 13px;flex:1;display:flex;flex-direction:column}
+.pbr{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.pname{font-size:12px;font-weight:500;color:#111;line-height:1.4;margin-bottom:6px;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prat{font-size:11px;color:#f39c12;margin-bottom:5px}
+.prat span{color:#999;margin-left:3px}
+.ppr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.price{font-size:15px;font-weight:700;color:#111}
+.oprice{font-size:11.5px;color:#aaa;text-decoration:line-through}
+.padd{margin-top:10px;background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:5px;padding:7px 0;width:100%;font-size:12px;font-weight:700;cursor:pointer;font-family:'Roboto',sans-serif;transition:all .2s}
+.padd:hover{background:#c0392b;color:#fff}
+
+/* ── PROMO PAIR ── */
+.promo-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pt{border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
+.pt img{width:100%;height:180px;object-fit:cover;display:block}
+
+/* ── BRANDS ── */
+.brand-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+.brand-row::-webkit-scrollbar{display:none}
+.btile{background:#fff;border:1px solid #e8e8e8;border-radius:8px;min-width:120px;height:70px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:14px;color:#333;cursor:pointer;transition:box-shadow .2s}
+.btile:hover{box-shadow:0 3px 12px rgba(0,0,0,.1)}
+
+/* ── USP ── */
+.usp{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border:1px solid #e8e8e8;border-radius:8px;overflow:hidden}
+.ucell{display:flex;align-items:center;gap:13px;padding:18px 20px;border-right:1px solid #ebebeb}
+.ucell:last-child{border-right:none}
+.ui{font-size:28px}
+.ut{font-size:13px;font-weight:600;color:#111}
+.us{font-size:11px;color:#888;margin-top:2px}
+
+/* ── FOOTER ── */
+footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
+.fgrid{max-width:1280px;margin:auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:28px;padding:36px 20px 28px;border-bottom:1px solid #eee}
+
+/* real Demo sales logo SVG style */
+.flogo{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:900;font-size:24px;color:#111;text-decoration:none;display:block;margin-bottom:12px}
+.fbrand p{font-size:12px;color:#666;line-height:1.7;max-width:215px}
+.socrow{display:flex;gap:8px;margin-top:14px}
+.socbtn{width:30px;height:30px;background:#f2f2f2;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;font-weight:700;color:#333}
+.fcol h4{font-size:13px;font-weight:700;color:#111;margin-bottom:13px}
+.fcol a{display:block;font-size:12px;color:#555;text-decoration:none;margin-bottom:8px}
+.fcol a:hover{color:#c0392b}
+.fbot{max-width:1280px;margin:auto;padding:14px 20px 18px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#999}
+.payrow{display:flex;gap:6px}
+.pm{background:#f2f2f2;border:1px solid #ddd;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;color:#444}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hd-top">
+
+    <!-- Logo (SVG recreation of the actual Demo sales italic wordmark) -->
+    <a href="#" class="vs-logo">
+      <svg viewBox="0 0 180 38" xmlns="http://www.w3.org/2000/svg" height="34">
+        <text x="2" y="30" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="900" font-size="28" fill="#111" letter-spacing="-1">Demo sales</text>
+      </svg>
+    </a>
+
+    <!-- Location -->
+    <div class="loc">
+      <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <div>
+        <div class="loc-city">Mumbai 400064</div>
+        <div class="loc-change">Change Location</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search">
+      <input type="text" placeholder="Search for phone, TV, home appliances...">
+      <button class="search-btn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="hd-actions">
+      <a class="hbtn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Store Locator
+      </a>
+      <a class="hbtn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Help Center
+      </a>
+      <a class="icon-btn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </a>
+      <a class="icon-btn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+      <a class="icon-btn" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="hd-nav">
+    <div class="nav-inner">
+      <a class="nlink" href="#">Air Conditioners</a>
+      <a class="nlink" href="#">Mobiles, Tablets &amp; Accessories</a>
+      <a class="nlink" href="#">Laptops &amp; Accessories</a>
+      <a class="nlink" href="#">Home Appliances</a>
+      <a class="nlink" href="#">Kitchen Appliances</a>
+      <a class="nlink" href="#">TV &amp; Entertainment</a>
+      <a class="nlink" href="#">Personal Care</a>
+      <a class="nlink" href="#">Headphones &amp; Speakers</a>
+      <a class="nlink" href="#">Brand Stores</a>
+      <a class="nlink loyalty" href="#">Loyalty Hub</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── HERO CAROUSEL (real Scene7 CDN images) ── -->
+<div class="carousel-wrap">
+  <div class="carousel" id="carousel">
+
+    <div class="slide active">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/SS_Desktop?dpr=on,2&bfc=on" alt="Summer Sale">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Vivo_X300_FE_Desktop?dpr=on,2&bfc=on" alt="Vivo X300 FE">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Laptop_Desktop?dpr=on,2&bfc=on" alt="Laptops">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Ac_Fest?dpr=on,2&bfc=on" alt="AC Sale">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/17_desktop?dpr=on,2&bfc=on" alt="iPhone 17">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Vivo_X300_Ultra_Desktop?dpr=on,2&bfc=on" alt="Vivo X300 Ultra">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Aircooler_Desktop?dpr=on,2&bfc=on" alt="Air Coolers">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Microwave_desktop?dpr=on,2&bfc=on" alt="Microwave">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Personal_Audio_Desktop-1?dpr=on,2&bfc=on" alt="Personal Audio">
+      </a>
+    </div>
+    <div class="slide">
+      <a href="#">
+        <img src="https://s7ap1.scene7.com/is/image/vsproddmfinal/Accessories_Desktop-1?dpr=on,2&bfc=on" alt="Accessories">
+      </a>
+    </div>
+
+    <div class="dots" id="dotsEl"></div>
+  </div>
+  <button class="carr-btn left" onclick="changeSlide(-1)">&#8249;</button>
+  <button class="carr-btn right" onclick="changeSlide(1)">&#8250;</button>
+</div>
+
+<!-- ── BANK OFFERS (real text from source) ── -->
+<div class="banks">
+  <div class="banks-scroll">
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/bank-offer/hdfc.svg" alt="HDFC Bank" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#004C8F;color:#fff;font-size:11px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">HDFC BANK</div>
+      <div class="btext"><strong>Get 7.5% Instant Discount Upto Rs.7500 on HDFC Bank Credit Card EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/offers/AMEXpng.png" alt="American Express" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#016FD0;color:#fff;font-size:9px;font-weight:800;border-radius:4px;align-items:center;justify-content:center;text-align:center">AMERICAN EXPRESS</div>
+      <div class="btext"><strong>Get 5% Instant Discount Upto Rs 20,000 on American Express Card EMI transactions</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/bank-offer/hsbc.svg" alt="HSBC" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#DB0011;color:#fff;font-size:12px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">HSBC</div>
+      <div class="btext"><strong>Get Upto Rs 12,000 Instant Discount on HSBC Bank Cards for EMI and Non-EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/offers/24-12-25/ICICI-Bank_Logo_For-cobrands_RGB.JPG" alt="ICICI Bank" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#f26522;color:#fff;font-size:10px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">ICICI BANK</div>
+      <div class="btext"><strong>Get Up to Rs 15,000 Instant Discount on ICICI Bank Credit Cards EMI &amp; Non EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/bank-offer/sbi-card.svg" alt="SBI Card" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#22409A;color:#fff;font-size:10px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">SBI CARD</div>
+      <div class="btext"><strong>Get 5% Instant Discount Upto Rs.2,500 on SBI Card EMI on 6 months &amp; above tenure</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/bank-offer/onecard.svg" alt="OneCard" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#111;color:#fff;font-size:12px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">one</div>
+      <div class="btext"><strong>Get Upto Rs. 20,000 Instant Discount on One Card Credit EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/bank-offer/bob-card.svg" alt="BOB Card" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#f47920;color:#fff;font-size:9px;font-weight:800;border-radius:4px;align-items:center;justify-content:center;text-align:center">BANK OF BARODA</div>
+      <div class="btext"><strong>Get 10% Instant Discount upto Rs.3,000 on BOB Card EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/bankoffers-popup/RBL Bank Logo.png" alt="RBL Bank" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#cc0033;color:#fff;font-size:11px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">RBL BANK</div>
+      <div class="btext"><strong>Get Instant Discount Upto Rs 4,000 on RBL Bank credit card EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+    <a class="bcard" href="#">
+      <img class="blogo" src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/static-pages/homepage/images/bank-offer/yes-bank.svg" alt="YES Bank" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="blogo" style="display:none;background:#003087;color:#fff;font-size:11px;font-weight:800;border-radius:4px;align-items:center;justify-content:center">YES BANK</div>
+      <div class="btext"><strong>Get 5% Instant Discount Upto Rs 2500 on YES Bank Credit Card EMI</strong><div class="tnc">*T&amp;C apply</div></div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ── SHOP BY CATEGORY (real images from source) ── -->
+<div class="cat-wrap">
+  <div class="cat-inner">
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_14372374_682554608.coreimg.png/1741687612924/ac.png" alt="Air Conditioner">
+      <span>Air Conditioners</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_59388047.coreimg.png/1758520201812/smartphones.png" alt="Mobiles">
+      <span>Mobiles</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy.coreimg.png/1732015746552/television-logo.png" alt="Television">
+      <span>Television</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_19689938.coreimg.png/1768637997633/laptops-logo.png" alt="Laptops">
+      <span>Laptops</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_20386086.coreimg.png/1731593827867/washing-machine-logo.png" alt="Washing Machines">
+      <span>Washing Machines</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_17132991_1033451983.coreimg.jpeg/1772178277034/air-purifier.jpeg" alt="Air Cooler">
+      <span>Air Cooler</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_17132991.coreimg.png/1772016219612/smartwatch.png" alt="Smartwatch">
+      <span>Smartwatch</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/_jcr_content/root/container/container/vscontainer_221465943/teaser_copy_17132991_384117867.coreimg.png/1738329778643/headphones.png" alt="Audio">
+      <span>Audio</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/common/header/navigation-card/feb-26/11-2-26/Refrigerator%20(Mobile)_.jpg" alt="Refrigerators">
+      <span>Refrigerators</span>
+    </a>
+    <a class="citem" href="#">
+      <img src="https://www.Demosales.com/content/dam/Demosaleswebsite/in/en/common/header/navigation-card/june-2025/21-06-25/Personal%20Care%20Navigation%20Tiles%20(Mobile).jpg" alt="Personal Care">
+      <span>Personal Care</span>
+    </a>
+  </div>
+</div>
+
+<!-- ── BEST OF APPLE (real products from source) ── -->
+<div class="sec">
+  <div class="sec-hdr">
+    <h2>Best of Apple</h2>
+    <a href="#">View All ›</a>
+  </div>
+  <div class="pgrid">
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/i/p/iphone_17_sage_pdp_image_position_1__en-in_1_1.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple iPhone 17">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple iPhone 17 (256GB Storage, Sage)</div>
+        <div class="prat">★★★★★ <span>(2,148)</span></div>
+        <div class="ppr"><span class="price">₹80,990</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/i/p/iphone_17_pro_cosmic_orange_pdp_image_position_1__en-in_1_1.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple iPhone 17 Pro">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple iPhone 17 Pro (256GB Storage, Cosmic Orange)</div>
+        <div class="prat">★★★★★ <span>(984)</span></div>
+        <div class="ppr"><span class="price">₹1,30,790</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/b/l/black_17_e_2_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple iPhone 17e">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple iPhone 17e (256GB Storage) Black</div>
+        <div class="prat">★★★★☆ <span>(756)</span></div>
+        <div class="ppr"><span class="price">₹62,900</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/m/a/macbook-neo-silver_4_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple MacBook Neo">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple MacBook Neo A18 Pro chip (8GB RAM / 256GB SSD / Silver)</div>
+        <div class="prat">★★★★★ <span>(421)</span></div>
+        <div class="ppr"><span class="price">₹66,490</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/s/i/silver_2_4.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple MacBook Air M5">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple MacBook Air M5 Chip (16GB RAM / 512GB SSD / 13 Inch)</div>
+        <div class="prat">★★★★★ <span>(612)</span></div>
+        <div class="ppr"><span class="price">₹1,13,990</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ── TVs ── -->
+<div class="sec">
+  <div class="sec-hdr">
+    <h2>Best Selling Smart TVs</h2>
+    <a href="#">View All ›</a>
+  </div>
+  <div class="pgrid">
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/3/231930_1_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="SANSUI 32 TV">
+        <div class="disc">32% OFF</div>
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Sansui</div>
+        <div class="pname">SANSUI 80 cm (32 inch) HD Ready LED TV | A+ Panel | 60 Hz</div>
+        <div class="prat">★★★★☆ <span>(4,100)</span></div>
+        <div class="ppr"><span class="price">₹9,990</span><span class="oprice">₹14,999</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/j/s/jss32gsqled_1.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="SANSUI QLED TV">
+        <div class="disc">24% OFF</div>
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Sansui</div>
+        <div class="pname">SANSUI 80 cm (32 inch) HD QLED Smart Google TV | HDR10 &amp; HLG</div>
+        <div class="prat">★★★★☆ <span>(1,841)</span></div>
+        <div class="ppr"><span class="price">₹13,990</span><span class="oprice">₹18,499</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/3/239480_1.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="TCL 43 TV">
+        <div class="disc">20% OFF</div>
+      </div>
+      <div class="pinfo">
+        <div class="pbr">TCL</div>
+        <div class="pname">TCL S5K Series 108 cm (43 inch) Full HD QLED Smart Google TV</div>
+        <div class="prat">★★★★☆ <span>(2,410)</span></div>
+        <div class="ppr"><span class="price">₹22,990</span><span class="oprice">₹28,990</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/3/239484n_1_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="TCL 55 TV">
+        <div class="disc">15% OFF</div>
+      </div>
+      <div class="pinfo">
+        <div class="pbr">TCL</div>
+        <div class="pname">TCL C6K Series 139 cm (55 inch) 4K QD-Mini LED Smart Google TV</div>
+        <div class="prat">★★★★★ <span>(987)</span></div>
+        <div class="ppr"><span class="price">₹54,990</span><span class="oprice">₹64,990</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/4/240934_1_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="LG 55 QNED TV">
+        <div class="disc">18% OFF</div>
+      </div>
+      <div class="pinfo">
+        <div class="pbr">LG</div>
+        <div class="pname">LG 139 cm (55 inch) QNED Mini LED 4K Ultra HD Smart TV</div>
+        <div class="prat">★★★★★ <span>(3,200)</span></div>
+        <div class="ppr"><span class="price">₹77,990</span><span class="oprice">₹94,990</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ── APPLE ACCESSORIES ── -->
+<div class="sec">
+  <div class="sec-hdr">
+    <h2>Apple Accessories</h2>
+    <a href="#">View All ›</a>
+  </div>
+  <div class="pgrid">
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/4/245237.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="AirPods Pro 3">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple AirPods Pro 3</div>
+        <div class="prat">★★★★★ <span>(1,560)</span></div>
+        <div class="ppr"><span class="price">₹24,900</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/3/232334-image.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="AirPods 4">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple AirPods 4 with Active Noise Cancellation | Charging Case (USB-C)</div>
+        <div class="prat">★★★★★ <span>(890)</span></div>
+        <div class="ppr"><span class="price">₹17,900</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/a/p/apple_watch_series_11_42mm_rose_gold_2_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple Watch Series 11">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple Watch Series 11 GPS 42mm Rose Gold Aluminium Case</div>
+        <div class="prat">★★★★★ <span>(723)</span></div>
+        <div class="ppr"><span class="price">₹44,590</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/i/p/ipad_11_wifi_blue_1_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="Apple iPad 11th Gen">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple iPad 11th Gen 2025 Wi-Fi 128GB Blue MD4A4HN/A</div>
+        <div class="prat">★★★★☆ <span>(540)</span></div>
+        <div class="ppr"><span class="price">₹32,490</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+    <a class="pcard" href="#">
+      <div class="pimg-wrap">
+        <img src="https://vsprod.Demosales.com/media/catalog/product/2/5/251998_1_.jpg?optimize=medium&fit=bounds&height=200&width=200" alt="AirTag">
+      </div>
+      <div class="pinfo">
+        <div class="pbr">Apple</div>
+        <div class="pname">Apple AirTag 2nd Generation | Tracker for Keys, Bags &amp; Luggage</div>
+        <div class="prat">★★★★☆ <span>(3,200)</span></div>
+        <div class="ppr"><span class="price">₹3,390</span></div>
+        <button class="padd">Add to Cart</button>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ── BRANDS ── -->
+<div class="sec">
+  <div class="sec-hdr">
+    <h2>Shop by Brand</h2>
+    <a href="#">All Brands ›</a>
+  </div>
+  <div class="brand-row">
+    <div class="btile">Apple</div>
+    <div class="btile">Samsung</div>
+    <div class="btile">OnePlus</div>
+    <div class="btile">Sony</div>
+    <div class="btile">LG</div>
+    <div class="btile">Dell</div>
+    <div class="btile">HP</div>
+    <div class="btile">Lenovo</div>
+    <div class="btile">Daikin</div>
+    <div class="btile">Voltas</div>
+    <div class="btile">Bosch</div>
+    <div class="btile">JBL</div>
+  </div>
+</div>
+
+<!-- ── USP ── -->
+<div class="sec" style="margin-bottom:0">
+  <div class="usp">
+    <div class="ucell"><div class="ui">🚚</div><div><div class="ut">Free Delivery</div><div class="us">On orders above ₹999</div></div></div>
+    <div class="ucell"><div class="ui">✅</div><div><div class="ut">100% Genuine</div><div class="us">Brand authorized products only</div></div></div>
+    <div class="ucell"><div class="ui">🔧</div><div><div class="ut">Free Installation</div><div class="us">On ACs, Washing Machines &amp; more</div></div></div>
+    <div class="ucell"><div class="ui">🏪</div><div><div class="ut">500+ Stores</div><div class="us">Experience before you buy</div></div></div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="fgrid">
+    <div class="fbrand">
+      <a href="#" class="flogo"><em>Demo sales</em></a>
+      <p>India's most trusted electronics retail chain, offering the best deals on all major brands since 1979.</p>
+      <div class="socrow">
+        <div class="socbtn">f</div>
+        <div class="socbtn">in</div>
+        <div class="socbtn">𝕏</div>
+        <div class="socbtn">▶</div>
+      </div>
+    </div>
+    <div class="fcol">
+      <h4>Quick Links</h4>
+      <a href="#">About Us</a>
+      <a href="#">Store Locator</a>
+      <a href="#">Careers</a>
+      <a href="#">Blog</a>
+      <a href="#">Press</a>
+    </div>
+    <div class="fcol">
+      <h4>Customer Service</h4>
+      <a href="#">Help Center</a>
+      <a href="#">Track My Order</a>
+      <a href="#">Returns &amp; Refunds</a>
+      <a href="#">EMI Options</a>
+      <a href="#">Warranty Claims</a>
+    </div>
+    <div class="fcol">
+      <h4>Top Categories</h4>
+      <a href="#">Air Conditioners</a>
+      <a href="#">Smartphones</a>
+      <a href="#">Laptops</a>
+      <a href="#">Smart TVs</a>
+      <a href="#">Refrigerators</a>
+    </div>
+    <div class="fcol">
+      <h4>Contact Us</h4>
+      <a href="#">📞 1800-103-0111</a>
+      <a href="#">✉ support@Demosales.com</a>
+      <a href="#">Mon–Sat: 9AM–8PM</a>
+      <a href="#">Download Our App</a>
+    </div>
+  </div>
+  <div class="fbot">
+    <div>© 2025 Demo Sales. All rights reserved.</div>
+    <div class="payrow">
+      <div class="pm">VISA</div>
+      <div class="pm">Mastercard</div>
+      <div class="pm">UPI</div>
+      <div class="pm">No Cost EMI</div>
+      <div class="pm">COD</div>
+    </div>
+    <div>Privacy Policy &nbsp;·&nbsp; Terms of Use &nbsp;·&nbsp; Sitemap</div>
+  </div>
+</footer>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dotsEl');
+  let cur = 0, total = slides.length, timer;
+
+  // Build dots
+  for (let i = 0; i < total; i++) {
+    const b = document.createElement('button');
+    b.className = 'dot' + (i === 0 ? ' on' : '');
+    b.onclick = () => { clearInterval(timer); goTo(i); startAuto(); };
+    dotsEl.appendChild(b);
+  }
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('on');
+    cur = ((n % total) + total) % total;
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('on');
+  }
+  function changeSlide(d) { clearInterval(timer); goTo(cur + d); startAuto(); }
+  function startAuto() { timer = setInterval(() => goTo(cur + 1), 4500); }
+  startAuto();
+</script>
+</body>
+</html>

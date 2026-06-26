@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Investment Discover</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7fa;
+  color: #1f2937;
+}
+
+/* Banner */
+header {
+  padding: 40px 24px;
+  color: white;
+  text-align: center;
+}
+.banner-logged-out { background: linear-gradient(135deg, #1d4ed8, #2563eb); }
+.banner-logged-in { background: linear-gradient(135deg, #047857, #10b981); }
+header h1 { margin:0 0 10px; font-size:32px; }
+header p { margin:0; font-size:16px; opacity:0.95; }
+
+/* Layout */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+.section-title { font-size:22px; margin-bottom:16px; }
+.products {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(240px,1fr));
+  gap:16px;
+}
+
+/* Cards */
+.card {
+  background: white !important;
+  background-color: white !important;
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.06);
+  position: relative;
+  outline: none !important;
+}
+.card:focus {
+  outline: none !important;
+}
+.card h3 { margin:0 0 8px; font-size:18px; }
+.card p { margin:0 0 12px; font-size:14px; color:#4b5563; }
+
+/* Tags */
+.tag {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:999px;
+  background:#e0f2fe;
+  color:#075985;
+  min-width:100px;
+  height:22px;
+  cursor:pointer;
+}
+.tag.popular { background:#dcfce7; color:#166534; }
+
+/* Mini Pop-up */
+.mini-popup {
+  position: fixed;
+  width: 260px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding:14px;
+  z-index:1001;
+  display:none;
+}
+.mini-popup h4 { margin:0 0 10px; font-size:14px; }
+.mini-popup ul { padding-left:16px; margin:0 0 12px; font-size:13px; }
+.mini-popup li { margin-bottom:6px; cursor:pointer; }
+.view-more {
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+  font-size:13px;
+}
+
+/* Buttons */
+.actions { margin-top:28px; text-align:center; }
+button {
+  padding:10px 18px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  font-size:14px;
+  margin:0 6px;
+}
+.login { background:#2563eb; color:white; }
+.logout { background:#6b7280; color:white; }
+
+/* Floating Widget */
+.floating-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg,#7c3aed,#6366f1);
+  color:white;
+  padding:16px 18px;
+  border-radius:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  max-width:260px;
+  display:none;
+  z-index:1000;
+  animation: floatUpDown 4s ease-in-out 5;
+}
+.floating-widget h4 { margin:0 0 6px; font-size:15px; }
+.floating-widget p { margin:0; font-size:13px; opacity:0.95; }
+
+@keyframes floatUpDown {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-200px); }
+  100% { transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- CleverTap -->
+<script type="text/javascript">
+var clevertap = {event:[], profile:[], account:[], onUserLogin:[], notifications:[], privacy:[], variables:[]};
+clevertap.account.push({ "id": "TEST-98R-R54-5Z6Z" });
+clevertap.privacy.push({optOut: false});
+clevertap.privacy.push({useIP: true});
+
+// Define variables
+clevertap.variables.push({
+  name: "highlight_card",
+  defaultValue: '{"mostViewedCardBorderColor": "#f59e0b", "exploreCardBorderColor": "#3b82f6"}'
+});
+
+clevertap.variables.push({
+  name: "floatingWidgetAfterLogout", 
+  defaultValue: '{"title": "New Fund Launch 🚀", "description": "Explore our latest diversified fund.", "backgroundColor": "#7c3aed"}'
+});
+
+clevertap.variables.push({
+  name: "Loged in Users",
+  defaultValue: '{"bannerColor": "#10b981", "welcomeMessage": "Welcome Back Investor 👋", "mostViewedCardBorderColor": "#f59e0b", "exploreCardBorderColor": "#3b82f6", "floatingWidgetColor": "#7c3aed"}'
+});
+
+(function(){
+  var wzrk=document.createElement('script');
+  wzrk.type='text/javascript';
+  wzrk.async=true;
+  wzrk.src=(document.location.protocol=='https:'?'https://d2r1yp2w7bby2u.cloudfront.net':'http://static.clevertap.com')+'/js/clevertap.min.js';
+  var s=document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(wzrk,s);
+})();
+</script>
+
+<!-- Floating Widget -->
+<div class="floating-widget" id="newFundWidget">
+  <h4 id="widgetTitle">New Fund Launch 🚀</h4>
+  <p id="widgetDescription">Explore our latest diversified fund designed for long-term growth.</p>
+</div>
+
+<header id="banner"></header>
+
+<main>
+  <h2 class="section-title">Most Viewed Products</h2>
+  <div class="products" id="productList"></div>
+
+  <div class="actions">
+    <button class="login" onclick="loginUser()">Simulate Login</button>
+    <button class="logout" onclick="logoutUser()">Logout</button>
+  </div>
+</main>
+
+<script>
+// Store CleverTap variables globally
+let ctVariables = {
+  // Default values in case CleverTap doesn't load
+  'highlight_card': '{"mostViewedCardBorderColor": "#f59e0b", "exploreCardBorderColor": "#3b82f6"}',
+  'floatingWidgetAfterLogout': '{"title": "New Fund Launch 🚀", "description": "Explore our latest diversified fund.", "backgroundColor": "#7c3aed"}',
+  'Loged in Users': '{"bannerColor": "#10b981", "welcomeMessage": "Welcome Back Investor 👋", "mostViewedCardBorderColor": "#f59e0b", "exploreCardBorderColor": "#3b82f6", "floatingWidgetColor": "#7c3aed"}'
+};
+
+// Fetch CleverTap variables on page load
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    console.log("Fetching variables after SDK load...");
+    
+    // Access variables from the clevertap object
+    if (clevertap.variables && clevertap.variables.length > 0) {
+      console.log("Found variables array:", clevertap.variables);
+      
+      // Convert array to object for easier access
+      const newVars = {};
+      clevertap.variables.forEach(function(v) {
+        if (v.name && v.value !== undefined) {
+          newVars[v.name] = v.value;
+        } else if (v.name && v.defaultValue !== undefined) {
+          newVars[v.name] = v.defaultValue;
+        }
+      });
+      
+      // Merge with existing defaults
+      ctVariables = Object.assign({}, ctVariables, newVars);
+      
+      console.log("✅ Variables loaded:", ctVariables);
+      console.log("✅ Variables JSON:", JSON.stringify(ctVariables, null, 2));
+      console.log("highlight_card value:", ctVariables['highlight_card']);
+    }
+  }, 3000);
+});
+
+// Auth simulation
+function isLoggedIn(){ return localStorage.getItem('isLoggedIn')==='true'; }
+
+function loginUser(){ 
+  localStorage.setItem('isLoggedIn','true'); 
+  clevertap.event.push("Login Button Clicked"); 
+  
+  // Wait a bit for CleverTap to process the event and fetch updated variables
+  setTimeout(function() {
+    if (typeof clevertap !== 'undefined' && clevertap.fetchVariables) {
+      clevertap.fetchVariables(
+        function () {
+          console.log("Variables re-fetched after login");
+          var allVars = clevertap.getVariables();
+          console.log("Updated CleverTap Variables:", allVars);
+          ctVariables = allVars;
+          
+          // Now apply logged in user config with fresh variables
+          applyLoggedInConfig();
+          updateUIForLoggedInUser();
+        },
+        function (err) {
+          console.error("Fetch failed after login", err);
+          // Even if fetch fails, apply with existing variables
+          applyLoggedInConfig();
+          updateUIForLoggedInUser();
+        }
+      );
+    } else {
+      // If CleverTap not ready, just apply with existing variables
+      applyLoggedInConfig();
+      updateUIForLoggedInUser();
+    }
+  }, 500);
+}
+
+function applyLoggedInConfig() {
+  const loggedInConfig = ctVariables['Loged in Users'] || {
+    bannerColor: "#10b981",
+    welcomeMessage: "Welcome Back Investor 👋",
+    mostViewedCardBorderColor: "#f59e0b",
+    exploreCardBorderColor: "#3b82f6",
+    floatingWidgetColor: "#7c3aed"
+  };
+  
+  console.log("=== PE Value (Loged in Users) ===");
+  console.log(JSON.stringify(ctVariables['Loged in Users'], null, 2));
+  console.log("=================================");
+  console.log("Applying logged in config:", loggedInConfig);
+  
+  // Store config in localStorage to use after reload
+  localStorage.setItem('loggedInConfig', JSON.stringify(loggedInConfig));
+}
+
+function updateUIForLoggedInUser() {
+  const loggedInConfigStr = localStorage.getItem('loggedInConfig');
+  const loggedInConfig = loggedInConfigStr ? JSON.parse(loggedInConfigStr) : {
+    bannerColor: "#10b981",
+    welcomeMessage: "Welcome Back Investor 👋",
+    mostViewedCardBorderColor: "#f59e0b",
+    exploreCardBorderColor: "#3b82f6",
+    floatingWidgetColor: "#7c3aed"
+  };
+  
+  // Handle undefined or empty welcome message
+  let welcomeMessage = loggedInConfig.welcomeMessage;
+  if (!welcomeMessage || welcomeMessage === 'undefined' || welcomeMessage.includes('undefined')) {
+    welcomeMessage = "Welcome Back Investor 👋";
+  }
+  
+  // Update banner
+  const banner = document.getElementById('banner');
+  banner.className = 'banner-logged-in';
+  banner.style.background = `linear-gradient(135deg, ${loggedInConfig.bannerColor}, #10b981)`;
+  banner.innerHTML = `<h1>${welcomeMessage}</h1><p>Investment opportunities curated just for you</p>`;
+  
+  // Update floating widget color
+  const widget = document.getElementById('newFundWidget');
+  widget.style.background = `linear-gradient(135deg, ${loggedInConfig.floatingWidgetColor}, #6366f1)`;
+  
+  // Update card borders
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((card, index) => {
+    // Don't apply default borders - only show on tag click
+    // const isPopular = index < 2;
+    // const borderColor = isPopular ? loggedInConfig.mostViewedCardBorderColor : loggedInConfig.exploreCardBorderColor;
+    // card.style.border = `2px solid ${borderColor}`;
+  });
+}
+
+function logoutUser(){ 
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('loggedInConfig'); // Clear the logged in config
+  clevertap.event.push("Logout Button Clicked"); 
+  
+  // Revert UI back to logged out state
+  revertToLoggedOutUI();
+  
+  // Show floating widget with remote config values
+  showFloatingWidgetAfterLogout();
+  
+  // Reload after a short delay to show the widget
+  setTimeout(function() {
+    location.reload();
+  }, 3000);
+}
+
+function revertToLoggedOutUI() {
+  // Revert banner
+  const banner = document.getElementById('banner');
+  banner.className = 'banner-logged-out';
+  banner.style.background = '';
+  banner.innerHTML = '<h1>Start Your Investment Journey</h1><p>Explore diversified options to help grow your wealth</p>';
+  
+  // Remove card borders
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((card) => {
+    card.style.border = '';
+  });
+}
+
+function showFloatingWidgetAfterLogout() {
+  const widget = document.getElementById('newFundWidget');
+  const widgetTitle = document.getElementById('widgetTitle');
+  const widgetDescription = document.getElementById('widgetDescription');
+  
+  // Get remote config values
+  const widgetConfig = ctVariables.floatingWidgetAfterLogout || {
+    title: "New Fund Launch 🚀",
+    description: "Explore our latest diversified fund designed for long-term growth.",
+    backgroundColor: "#7c3aed"
+  };
+  
+  console.log("Applying widget config:", widgetConfig);
+  
+  // Update widget content
+  widgetTitle.textContent = widgetConfig.title;
+  widgetDescription.textContent = widgetConfig.description;
+  
+  // Update background color
+  widget.style.background = `linear-gradient(135deg, ${widgetConfig.backgroundColor}, #6366f1)`;
+  
+  // Show the widget
+  widget.style.display = 'block';
+  
+  // Store that we've shown the widget
+  localStorage.setItem('showNewFundWidget', 'true');
+}
+
+// Banner
+const banner=document.getElementById('banner');
+const widget=document.getElementById('newFundWidget');
+
+const loggedInConfigStr = localStorage.getItem('loggedInConfig');
+const loggedInConfig = loggedInConfigStr ? JSON.parse(loggedInConfigStr) : {
+  bannerColor: "#10b981",
+  welcomeMessage: "Welcome Back Investor 👋",
+  mostViewedCardBorderColor: "#f59e0b",
+  exploreCardBorderColor: "#3b82f6",
+  floatingWidgetColor: "#7c3aed"
+};
+
+if(isLoggedIn()) {
+  // Handle undefined or empty welcome message
+  let welcomeMessage = loggedInConfig.welcomeMessage;
+  if (!welcomeMessage || welcomeMessage === 'undefined' || welcomeMessage.includes('undefined')) {
+    welcomeMessage = "Welcome Back Investor 👋";
+  }
+  
+  banner.className = 'banner-logged-in';
+  banner.style.background = `linear-gradient(135deg, ${loggedInConfig.bannerColor}, #10b981)`;
+  banner.innerHTML = `<h1>${welcomeMessage}</h1><p>Investment opportunities curated just for you</p>`;
+  
+  // Apply floating widget color for logged in users
+  widget.style.background = `linear-gradient(135deg, ${loggedInConfig.floatingWidgetColor}, #6366f1)`;
+  
+  // Don't apply card borders on page load
+} else {
+  banner.className = 'banner-logged-out';
+  banner.innerHTML = '<h1>Start Your Investment Journey</h1><p>Explore diversified options to help grow your wealth</p>';
+}
+
+// Floating Widget
+if(!isLoggedIn() && localStorage.getItem('showNewFundWidget')==='true'){
+  widget.style.display='block';
+}
+widget.addEventListener('click',()=>{
+  widget.style.animationPlayState='paused';
+  widget.style.bottom='24px';
+  clevertap.event.push("Floating Widget Clicked");
+  
+  // Change widget color based on remote config
+  const newColor = ctVariables['Change floating widget color'] || '#e11d48';
+  console.log("Changing widget color to:", newColor);
+  widget.style.background = `linear-gradient(135deg, ${newColor}, #6366f1)`;
+});
+
+// Products
+const products=[
+  { name:'Large Cap Growth Fund', description:'Stable growth with lower volatility.' },
+  { name:'Equity Advantage Fund', description:'Balanced equity exposure with tax efficiency.' },
+  { name:'Short Term Debt Fund', description:'Lower risk option for short-term goals.' },
+  { name:'Mid Cap Opportunities Fund', description:'Higher growth potential with moderate risk.' },
+  { name:'ELSS Tax Saver Fund', description:'Tax saving fund with equity exposure.' },
+  { name:'Hybrid Balanced Fund', description:'Mix of equity and debt for stability.' }
+];
+
+const productList=document.getElementById('productList');
+
+function createPopup(type, cardName){
+  const popup=document.createElement('div');
+  popup.className='mini-popup';
+  popup.innerHTML=`
+    <h4>${type==='popular'?'Top 5 Most Viewed Funds':'Explore Funds'}</h4>
+    <ul>${products.slice(0,5).map(f=>`<li>${f.name}</li>`).join('')}</ul>
+    <button class="view-more">View more</button>
+  `;
+  document.body.appendChild(popup);
+
+  // Track View More click
+  popup.querySelector('.view-more').addEventListener('click',()=>{
+    clevertap.event.push(`${cardName} View More Clicked`);
+  });
+
+  // Track individual fund click in popup
+  popup.querySelectorAll('li').forEach(li=>{
+    li.addEventListener('click',()=>clevertap.event.push(`${cardName} Popup Fund Clicked: ${li.textContent}`));
+  });
+
+  return popup;
+}
+
+// Render cards
+products.forEach((product,index)=>{
+  const card=document.createElement('div');
+  card.className='card';
+  const isPopular=index<2;
+  const popup=createPopup(isPopular?'popular':'explore', product.name);
+
+  card.innerHTML=`
+    <h3>${product.name}</h3>
+    <p>${product.description}</p>
+    <span class="tag ${isPopular?'popular':''}">${isPopular?'Most Viewed':'Explore'}</span>
+  `;
+  
+  // Apply border colors from remote config if logged in
+  if(isLoggedIn()) {
+    const borderColor = isPopular ? loggedInConfig.mostViewedCardBorderColor : loggedInConfig.exploreCardBorderColor;
+    // Commenting out default borders - only show on tag click
+    // card.style.border = `2px solid ${borderColor}`;
+  }
+
+  // Card click to highlight - attach AFTER adding to DOM
+  productList.appendChild(card);
+  
+  card.addEventListener('click', (e) => {
+    console.log("=== CARD CLICK DETECTED ===");
+    console.log("Card clicked!", e.target, e.currentTarget);
+    console.log("Product name:", product.name);
+    console.log("Current target classList:", e.currentTarget.classList);
+    console.log("Current target element:", e.currentTarget);
+    
+    // Store reference to the clicked card
+    const clickedCard = e.currentTarget;
+    
+    // Test: Apply multiple styles to see if ANY work
+    console.log("Before style - border:", clickedCard.style.border);
+    clickedCard.style.border = "5px solid red !important";
+    clickedCard.style.outline = "5px solid blue";
+    clickedCard.style.backgroundColor = "yellow";
+    console.log("After style - border:", clickedCard.style.border);
+    console.log("After style - background:", clickedCard.style.backgroundColor);
+    
+    // Check if clicking on tag or its parent
+    if(e.target.classList.contains('tag')) {
+      console.log("Tag was clicked, ignoring card click");
+      return;
+    }
+    
+    // Check if clicking on tag or its parent
+    if(e.target.classList.contains('tag')) {
+      console.log("Tag was clicked, ignoring card click");
+      return;
+    }
+    
+    console.log("Not a tag click, proceeding...");
+    
+    const eventName = isPopular ? 'Most Viewed Clicked' : 'Explore Clicked';
+    
+    // Push event with card name as property
+    clevertap.event.push(eventName, {
+      "Card Name": product.name
+    });
+    
+    console.log(`Event raised: ${eventName} with Card Name: ${product.name}`);
+    console.log(`Card type: ${isPopular ? 'Most Viewed' : 'Explore'}`);
+    
+    // First check if variable already exists
+    console.log("Checking existing ctVariables:", ctVariables);
+    console.log("Existing highlight_card:", ctVariables['highlight_card']);
+    
+    // Wait for CleverTap to process the event, then fetch variables
+    setTimeout(function() {
+      if (typeof clevertap !== 'undefined' && clevertap.fetchVariables) {
+        console.log("CleverTap is available, fetching variables after event...");
+        
+        clevertap.fetchVariables(
+        function () {
+          console.log("=== Fetch Variables Callback Success ===");
+          var allVars = clevertap.getVariables();
+          console.log("All variables returned:", allVars);
+          ctVariables = allVars;
+          
+          let highlightData = ctVariables['highlight_card'];
+          console.log("=== Highlight Card Variable (Raw) ===");
+          console.log("Type:", typeof highlightData);
+          console.log("Raw value:", highlightData);
+          
+          // Parse if it's a string
+          if (typeof highlightData === 'string') {
+            try {
+              highlightData = JSON.parse(highlightData);
+              console.log("✅ Parsed successfully:", highlightData);
+            } catch (e) {
+              console.error("❌ Failed to parse highlight_card:", e);
+              return;
+            }
+          }
+          
+          console.log("=== Final Highlight Data ===");
+          console.log(JSON.stringify(highlightData, null, 2));
+          console.log("================================");
+          
+          if(highlightData) {
+            // Get the correct border color based on card type
+            const borderColor = isPopular 
+              ? (highlightData.mostViewedCardBorderColor || '#f59e0b')
+              : (highlightData.exploreCardBorderColor || '#3b82f6');
+            
+            console.log(`Looking for: ${isPopular ? 'mostViewedCardBorderColor' : 'exploreCardBorderColor'}`);
+            console.log(`Border color found: ${borderColor}`);
+            
+            if(borderColor) {
+              // Remove highlight from all cards first
+              document.querySelectorAll('.card').forEach(c => {
+                // Reset to default state
+                if(isLoggedIn()) {
+                  const idx = Array.from(c.parentNode.children).indexOf(c);
+                  const isPop = idx < 2;
+                  const defaultBorder = isPop ? loggedInConfig.mostViewedCardBorderColor : loggedInConfig.exploreCardBorderColor;
+                  c.style.border = `2px solid ${defaultBorder}`;
+                } else {
+                  c.style.border = '';
+                }
+                c.style.boxShadow = '0 4px 10px rgba(0,0,0,0.06)';
+              });
+              
+              // Highlight only THIS clicked card with thicker border
+              clickedCard.style.border = `4px solid ${borderColor}`;
+              clickedCard.style.boxShadow = `0 8px 18px rgba(0,0,0,0.15)`;
+              console.log(`✅ Applied border to clicked card: 4px solid ${borderColor}`);
+            } else {
+              console.log("❌ No border color found in highlight_card variable");
+            }
+          } else {
+            console.log("❌ highlight_card variable is undefined or null");
+          }
+        },
+        function (err) {
+          console.error("❌ Fetch failed for highlight:", err);
+        }
+      );
+    } else {
+      console.log("❌ CleverTap not available or fetchVariables not defined");
+    }
+    }, 1000); // Wait 1 second for CleverTap to process the event
+  });
+
+  // Tag click - this is where highlighting should happen
+  card.querySelector('.tag').addEventListener('click',(e)=>{
+    e.stopPropagation();
+    
+    console.log("=== TAG CLICKED ===");
+    console.log("Product:", product.name);
+    console.log("Is Popular:", isPopular);
+    
+    // Close all popups first
+    document.querySelectorAll('.mini-popup').forEach(p=>p.style.display='none');
+    
+    // Show popup
+    const rect=e.target.getBoundingClientRect();
+    popup.style.top=rect.bottom+window.scrollY+8+'px';
+    popup.style.left=rect.left+window.scrollX+'px';
+    popup.style.display='block';
+
+    // Track click with card name as property
+    const eventName = isPopular ? 'Most Viewed Clicked' : 'Explore Clicked';
+    clevertap.event.push(eventName, {
+      "Card Name": product.name
+    });
+    
+    console.log(`Event raised: ${eventName}`);
+    
+    // Use the ctVariables already loaded on page load
+    console.log("Using existing ctVariables:", ctVariables);
+    console.log("ctVariables keys:", Object.keys(ctVariables));
+    console.log("highlight_card:", ctVariables['highlight_card']);
+    
+    // Wait a bit if variables aren't loaded yet
+    const checkAndHighlight = function() {
+      let highlightData = ctVariables['highlight_card'];
+      console.log("Highlight data (raw):", highlightData);
+      
+      // Parse if it's a string
+      if (typeof highlightData === 'string') {
+        try {
+          highlightData = JSON.parse(highlightData);
+          console.log("✅ Parsed:", highlightData);
+        } catch (err) {
+          console.error("Parse error:", err);
+          return;
+        }
+      }
+      
+      if(highlightData) {
+        const borderColor = isPopular 
+          ? (highlightData.mostViewedCardBorderColor || '#f59e0b')
+          : (highlightData.exploreCardBorderColor || '#3b82f6');
+        
+        console.log(`Border color: ${borderColor}`);
+        
+        if(borderColor) {
+          // Remove highlight from ALL cards
+          document.querySelectorAll('.card').forEach(c => {
+            if(isLoggedIn()) {
+              const idx = Array.from(c.parentNode.children).indexOf(c);
+              const isPop = idx < 2;
+              const defaultBorder = isPop ? loggedInConfig.mostViewedCardBorderColor : loggedInConfig.exploreCardBorderColor;
+              c.style.border = `2px solid ${defaultBorder}`;
+            } else {
+              c.style.border = '';
+            }
+            c.style.boxShadow = '0 4px 10px rgba(0,0,0,0.06)';
+          });
+          
+          // Highlight THIS card
+          card.style.border = `4px solid ${borderColor}`;
+          card.style.boxShadow = `0 8px 18px rgba(0,0,0,0.15)`;
+          console.log(`✅ Highlighted card with ${borderColor}`);
+        } else {
+          console.log("No border color found");
+        }
+      } else {
+        console.log("No highlight data");
+      }
+    };
+    
+    // If variables not loaded yet, wait
+    if (!ctVariables || Object.keys(ctVariables).length === 0 || !ctVariables['highlight_card']) {
+      console.log("Variables not loaded yet, waiting...");
+      setTimeout(checkAndHighlight, 3500);
+    } else {
+      checkAndHighlight();
+    }
+  });
+
+  // Clicking outside closes popups
+  document.addEventListener('click',()=>popup.style.display='none');
+});
+</script>
+
+</body>
+</html>
