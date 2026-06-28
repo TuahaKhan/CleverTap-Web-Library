@@ -21,8 +21,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <script type="text/javascript">
   // CleverTap SDK Initialization
-  // NOTE: we added `variables: []` to the queue object below — this is REQUIRED so we can
-  //       define Product Experience (Remote Config) variables before the SDK finishes loading.
   //
   // ── MANUAL STEP (REQUIRED for Product Experience / Remote Config) ──────────────────────
   //    `region` and `token` (Account Token) MUST be set, or syncVariables()/remote-config
@@ -32,7 +30,7 @@
   //    CleverTap), but avoid committing the real value to a public repo — paste it here
   //    locally for the demo, or inject it at deploy time.
   var clevertap = {
-    event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], variables: [],
+    event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [],
     region: 'YOUR_REGION',       // ⬅️ e.g. 'in1', 'eu1', 'us1', 'sg1', 'aps3' (see Settings)
     token:  'YOUR_ACCOUNT_TOKEN'  // ⬅️ paste your Account Token from Dashboard → Settings
   };
@@ -46,49 +44,46 @@
   clevertap.privacy.push({ useIP: true });
 
   /* ════════════════════════════════════════════════════════════════════════════════════
-     ║  CLEVERTAP PRODUCT EXPERIENCE (PE) — VARIABLE DEFINITIONS                            ║
+     ║  CLEVERTAP PRODUCT EXPERIENCE (PE) — VARIABLE DEFAULTS                               ║
      ║                                                                                      ║
-     ║  These 4 variables drive the 4 demo use cases. Each is defined here with a sensible  ║
-     ║  DEFAULT value (used when the dashboard has no override OR the user is not in a       ║
-     ║  targeted segment). On the dashboard you OVERRIDE these per-segment via a PE          ║
-     ║  campaign — no code change / redeploy needed.                                         ║
+     ║  These 4 variables drive the 4 demo use cases. The DEFAULT value here is used when    ║
+     ║  the dashboard has no override OR the user is not in a targeted segment. On the        ║
+     ║  dashboard you OVERRIDE these per-segment via a PE campaign — no code redeploy.        ║
      ║                                                                                      ║
-     ║  Values are stored as JSON strings (the repo's established convention) and parsed     ║
-     ║  client-side. Variable NAMES below must match EXACTLY what you create on the          ║
-     ║  dashboard. See VIJAYSALES_PE_DEMO_SETUP.md for step-by-step dashboard setup.         ║
+     ║  IMPORTANT (per SDK source review):                                                   ║
+     ║   • Variables must be registered with clevertap.defineVariable(name, value) AFTER the ║
+     ║     SDK loads — the pre-load `clevertap.variables.push()` queue is NOT processed for  ║
+     ║     variables. We therefore define them in wzrk.onload below, from this map.          ║
+     ║   • Each default MUST be a real JS OBJECT (not a JSON string), so the SDK registers   ║
+     ║     it as an object and the dashboard expands its nested keys.                         ║
+     ║                                                                                      ║
+     ║  Variable NAMES must match EXACTLY what appears on the dashboard after syncing.        ║
+     ║  See VIJAYSALES_PE_DEMO_SETUP.md for step-by-step dashboard setup.                     ║
      ╚════════════════════════════════════════════════════════════════════════════════════ */
+  window.VS_PE_VARS = {
+    // UC1 — Category Affinity Re-ranking. boostedCategory = category to surface on next visit.
+    "vs_category_priority": { boostedCategory: "", headline: "Recommended for You" },
 
-  // ── UC1: Category Affinity Re-ranking ───────────────────────────────────────────────
-  // boostedCategory = the category to surface prominently on the user's NEXT visit.
-  // You set this per-segment (e.g. "users who clicked Air Conditioners in last 7 days").
-  clevertap.variables.push({
-    name: "vs_category_priority",
-    defaultValue: '{"boostedCategory": "", "headline": "Recommended for You"}'
-  });
+    // UC2 — Festival / Sale Theme. Flip `active` to true on the dashboard to re-skin the site.
+    "vs_festival_theme": {
+      active: false, name: "Diwali Dhamaka",
+      ribbonText: "🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI",
+      accentColor: "#d35400", headerBg: "#2a0a3a", countdownText: "Hurry! Sale ends in 2 days"
+    },
 
-  // ── UC2: Festival / Sale Theme Switch ────────────────────────────────────────────────
-  // Marketing flips `active` to true and edits the copy/colors to instantly re-skin the
-  // whole site for a sale event. No developer involvement.
-  clevertap.variables.push({
-    name: "vs_festival_theme",
-    defaultValue: '{"active": false, "name": "Diwali Dhamaka", "ribbonText": "\\uD83E\\uDE94 Diwali Dhamaka Sale \\u2014 Up to 60% OFF + No Cost EMI", "accentColor": "#d35400", "headerBg": "#2a0a3a", "countdownText": "Hurry! Sale ends in 2 days"}'
-  });
+    // UC3 — Login + Loyalty-Tier. Default is the GUEST / logged-out experience.
+    "vs_loyalty_config": {
+      tier: "Guest", greeting: "Sign in for member prices, faster checkout & order tracking",
+      accentColor: "#c0392b", perks: ["Member-only prices", "Faster checkout"], showPerksStrip: false
+    },
 
-  // ── UC3: Login + Loyalty-Tier Personalization ────────────────────────────────────────
-  // The server returns the config for the user's loyalty tier (decided by which segment
-  // they fall in). Default below is the GUEST / logged-out experience.
-  clevertap.variables.push({
-    name: "vs_loyalty_config",
-    defaultValue: '{"tier": "Guest", "greeting": "Sign in for member prices, faster checkout & order tracking", "accentColor": "var(--vs-accent)", "perks": ["Member-only prices", "Faster checkout"], "showPerksStrip": false}'
-  });
-
-  // ── UC4: City / Language Localization ─────────────────────────────────────────────────
-  // The server returns localized copy for the user's City segment. Default below targets
-  // Mumbai (Marathi). Other cities are set as overrides on the dashboard per geo-segment.
-  clevertap.variables.push({
-    name: "vs_city_config",
-    defaultValue: '{"city": "Mumbai", "language": "Marathi", "greeting": "\\u0928\\u092E\\u0938\\u094D\\u0915\\u093E\\u0930 \\u092E\\u0941\\u0902\\u092C\\u0908! \\uD83D\\uDE4F", "subText": "\\u092E\\u0941\\u0902\\u092C\\u0908\\u0924 \\u091C\\u0932\\u0926 \\u0921\\u093F\\u0932\\u093F\\u0935\\u094D\\u0939\\u0930\\u0940 \\u0906\\u0923\\u093F \\u091C\\u0935\\u0933\\u091A\\u0947 \\u0938\\u094D\\u091F\\u094B\\u0905\\u0930", "storeCallout": "Nearest store: Vijay Sales, Andheri West \\u2014 2.3 km", "show": true}'
-  });
+    // UC4 — City / Language Localization. Default targets Mumbai (Marathi).
+    "vs_city_config": {
+      city: "Mumbai", language: "Marathi", greeting: "नमस्कार मुंबई! 🙏",
+      subText: "मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर",
+      storeCallout: "Nearest store: Vijay Sales, Andheri West — 2.3 km", show: true
+    }
+  };
 
   (function () {
     var wzrk = document.createElement('script');
@@ -101,6 +96,19 @@
         // SDK version check
         if (clevertap.getSDKVersion) {
           console.log('[CleverTap] SDK Version:', clevertap.getSDKVersion());
+        }
+
+        // ── REGISTER PE VARIABLES (must be done AFTER load via defineVariable) ──────────
+        // The pre-load `clevertap.variables.push()` queue is NOT processed for variables,
+        // so we register each one here from window.VS_PE_VARS, passing a real OBJECT default.
+        if (clevertap.defineVariable) {
+          Object.keys(window.VS_PE_VARS).forEach(function (name) {
+            clevertap.defineVariable(name, window.VS_PE_VARS[name]);
+          });
+          window.__vsVarsDefined = true;
+          console.log('[VS_PE] Defined variables:', Object.keys(window.VS_PE_VARS));
+        } else {
+          console.warn('[VS_PE] clevertap.defineVariable missing — is the Web SDK v1.11.10+?');
         }
 
         // Randomly assign Even or Odd cohort
@@ -1218,29 +1226,37 @@ var VS_PE = (function () {
     applyCategory(categoryCfg());
   }
 
-  /* ───────── Fetch live PE values from CleverTap, then render ──────────────────────────── */
-  function fetchAndRender() {
-    if (typeof clevertap === 'undefined' || !clevertap.fetchVariables) { renderAll(); return; }
+  /* Pull all current variable values into liveVars. getVariables() is SYNCHRONOUS and takes
+     NO callback — it returns the values (server-fetched, else defaults) from local storage. */
+  function pullLiveVars() {
     try {
-      clevertap.fetchVariables(function () {
-        // getVariables supports a callback in the Web SDK; also handle a return-value SDK build.
-        var handle = function (all) {
-          if (all) { Object.keys(all).forEach(function (k) { liveVars[k] = parse(all[k]); }); }
-          console.log('[VS_PE] Live PE variables:', liveVars);
-          renderAll();
-        };
-        var ret = clevertap.getVariables(handle);
-        if (ret) handle(ret);
+      var all = clevertap.getVariables();        // synchronous, no callback
+      if (all) { Object.keys(all).forEach(function (k) { liveVars[k] = parse(all[k]); }); }
+    } catch (e) { console.warn('[VS_PE] getVariables error', e); }
+  }
+
+  /* ───────── Fetch live PE values from CleverTap, then render ──────────────────────────────
+     Polls until the SDK has loaded AND variables are defined (defineVariable runs in
+     wzrk.onload), then fetches server values and renders. */
+  function fetchAndRender(tries) {
+    tries = tries || 0;
+    var ready = typeof clevertap !== 'undefined' &&
+                typeof clevertap.fetchVariables === 'function' &&
+                window.__vsVarsDefined === true;
+    if (!ready) {
+      if (tries < 25) { setTimeout(function () { fetchAndRender(tries + 1); }, 300); }
+      else { renderAll(); } // SDK never came up (e.g. offline) — show defaults/demo state
+      return;
+    }
+    try {
+      clevertap.fetchVariables(function () {   // callback fires when the server responds
+        pullLiveVars();
+        console.log('[VS_PE] Live PE variables:', liveVars);
+        renderAll();
       });
       // Re-render automatically if the dashboard pushes a new value mid-session.
       if (clevertap.addVariablesChangedCallback) {
-        clevertap.addVariablesChangedCallback(function () {
-          var ret = clevertap.getVariables(function (all) {
-            if (all) { Object.keys(all).forEach(function (k) { liveVars[k] = parse(all[k]); }); }
-            renderAll();
-          });
-          if (ret) { Object.keys(ret).forEach(function (k) { liveVars[k] = parse(ret[k]); }); renderAll(); }
-        });
+        clevertap.addVariablesChangedCallback(function () { pullLiveVars(); renderAll(); });
       }
     } catch (e) { console.warn('[VS_PE] fetch error', e); renderAll(); }
   }
@@ -1269,8 +1285,9 @@ var VS_PE = (function () {
       wireAffinityEvents();
       buildDemoPanel();
       // First render with defaults immediately (no blank flash), then refine with live PE.
+      // fetchAndRender polls for SDK readiness itself, so no fixed-timeout race here.
       renderAll();
-      window.addEventListener('load', function () { setTimeout(fetchAndRender, 1500); });
+      fetchAndRender();
 
       // ONE-TIME variable registration: open this page as your TEST PROFILE with ?ctsync=1
       // (e.g. vijaysales.html?ctsync=1) to push the variable DEFINITIONS to the dashboard.
@@ -1301,7 +1318,7 @@ var VS_PE = (function () {
       clevertap.onUserLogin.push({ "Site": { "Name": "Demo Member", "Identity": "demo_" + (tier || 'Gold'), "Loyalty Tier": tier || 'Gold' } });
       clevertap.event.push("Logged In", { "Loyalty Tier": tier || 'Gold' });
       // A profile change can move the user into a new segment → re-fetch PE values.
-      if (clevertap.fetchVariables) { clevertap.fetchVariables(function () { var r = clevertap.getVariables(function(a){ if(a){Object.keys(a).forEach(function(k){liveVars[k]=parse(a[k]);});} renderAll(); }); if (r) { Object.keys(r).forEach(function(k){liveVars[k]=parse(r[k]);}); renderAll(); } }); }
+      if (clevertap.fetchVariables) { clevertap.fetchVariables(function () { pullLiveVars(); renderAll(); }); }
       renderAll();
     },
     logout: function () {

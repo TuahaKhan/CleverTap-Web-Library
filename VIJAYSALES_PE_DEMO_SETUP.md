@@ -61,17 +61,19 @@ clevertap.syncVariables(
 **Option C — Create them manually** under **Product Experiences → Variables → Create**, using
 the exact names, types and defaults below.
 
-| # | Variable name | Type | Default value (JSON) |
+| # | Variable name | Type | Default value (object) |
 |---|---|---|---|
-| UC1 | `vs_category_priority` | JSON (string) | `{"boostedCategory":"","headline":"Recommended for You"}` |
-| UC2 | `vs_festival_theme` | JSON (string) | `{"active":false,"name":"Diwali Dhamaka","ribbonText":"🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI","accentColor":"#d35400","headerBg":"#2a0a3a","countdownText":"Ends in 2 days"}` |
-| UC3 | `vs_loyalty_config` | JSON (string) | `{"tier":"Guest","greeting":"Sign in for member prices, faster checkout & order tracking","accentColor":"#c0392b","perks":["Member-only prices","Faster checkout"],"showPerksStrip":false}` |
-| UC4 | `vs_city_config` | JSON (string) | `{"city":"Mumbai","language":"Marathi","greeting":"नमस्कार मुंबई! 🙏","subText":"मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर","storeCallout":"Nearest store: Vijay Sales, Andheri West — 2.3 km","show":true}` |
+| UC1 | `vs_category_priority` | **Object (map)** | `{"boostedCategory":"","headline":"Recommended for You"}` |
+| UC2 | `vs_festival_theme` | **Object (map)** | `{"active":false,"name":"Diwali Dhamaka","ribbonText":"🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI","accentColor":"#d35400","headerBg":"#2a0a3a","countdownText":"Ends in 2 days"}` |
+| UC3 | `vs_loyalty_config` | **Object (map)** | `{"tier":"Guest","greeting":"Sign in for member prices, faster checkout & order tracking","accentColor":"#c0392b","perks":["Member-only prices","Faster checkout"],"showPerksStrip":false}` |
+| UC4 | `vs_city_config` | **Object (map)** | `{"city":"Mumbai","language":"Marathi","greeting":"नमस्कार मुंबई! 🙏","subText":"मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर","storeCallout":"Nearest store: Vijay Sales, Andheri West — 2.3 km","show":true}` |
 
-> **Note on value type:** the demo stores each config as a **JSON string** and parses it
-> client-side (the convention already used in `sample_pe_demo.html`). If you prefer, CleverTap
-> also supports native string/number/boolean variables — but JSON keeps each use case in one
-> editable value, which is easier to manage from the dashboard.
+> **Note on value type (important):** each variable is registered as a real **object/map**, not a
+> JSON string. In code this is done with `clevertap.defineVariable(name, {...})` **after the SDK
+> loads** (in `wzrk.onload`) — the pre-load `clevertap.variables.push()` queue is *not* processed
+> for variables, and passing a JSON *string* would register it as a `string` type and the dashboard
+> wouldn't expand its nested keys. The page reads values back with the **synchronous**
+> `clevertap.getVariables()` (no callback).
 
 ---
 
@@ -135,18 +137,19 @@ value (on load, or after `fetchVariables()`), and the page re-renders.
 
 Everything below is **done** — listed so you know what changed and what to revisit for production:
 
-1. **`variables: []`** added to the `clevertap` queue object (required to define variables pre-load).
+1. **`region` + `token`** added as top-level properties on the `clevertap` object (required by
+   Remote Config; without them `syncVariables()` throws *"Account token is missing."*).
 2. **`useIP` changed `false → true`** to enable City geo-segments for UC4.
-3. **4 `clevertap.variables.push({...})`** definitions added (the variables table above).
+3. **4 variables registered via `clevertap.defineVariable(name, {...})` in `wzrk.onload`**, from the
+   `window.VS_PE_VARS` object map (real objects, not JSON strings — see the value-type note above).
 4. Hardcoded brand red `#c0392b` replaced with the **`--vs-accent`** CSS variable so UC2 can re-skin.
 5. New HTML containers added: festival ribbon, city strip, loyalty strip, "Recommended" hero.
-6. A single **`VS_PE` engine `<script>`** that fetches the variables and applies all 4 use cases,
-   plus a **floating "Demo Controls" panel**.
+6. A single **`VS_PE` engine `<script>`** that reads the variables (synchronous `getVariables()`,
+   polling until the SDK is ready) and applies all 4 use cases, plus a **floating "Demo Controls" panel**.
 
 **What you MUST fill in manually before the dashboard flow works:** the **`region`** and
-**`token`** (Account Token) placeholders in the `<head>` init — without them Remote Config throws
-*"Account token is missing."* Optionally also change the **account ID** (if demoing on another
-account) and the `CATEGORY_META` image URLs / copy in the script.
+**`token`** (Account Token) placeholders in the `<head>` init. Optionally also change the
+**account ID** (if demoing on another account) and the `CATEGORY_META` image URLs / copy in the script.
 
 ---
 
