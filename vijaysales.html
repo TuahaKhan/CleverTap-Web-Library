@@ -1010,11 +1010,20 @@ var VS_PE = (function () {
     try { var all = clevertap.getVariables(); if (all) liveVars = all; }
     catch (e) { console.warn('[VS_PE] getVariables error', e); }
   }
-  // Return an object variable's value (falls back to the <head> default, else {}).
+  // Return an object variable's value. CleverTap may return it either as a real object OR as
+  // a JSON STRING (String-type dashboard variable) — so parse strings. Falls back to the
+  // <head> default, else {}.
   function vobj(name) {
     var v = liveVars[name];
-    if ((!v || typeof v !== 'object') && window.VS_PE_VARS) v = window.VS_PE_VARS[name];
-    return (v && typeof v === 'object') ? v : {};
+    if (typeof v === 'string') {
+      try { v = JSON.parse(v); }            // String-type variable holding JSON → parse it
+      catch (e) { console.warn('[VS_PE] ' + name + ' is a string but not valid JSON:', v); v = null; }
+    }
+    if (!v || typeof v !== 'object') {
+      var d = window.VS_PE_VARS ? window.VS_PE_VARS[name] : null;
+      return (d && typeof d === 'object') ? d : {};
+    }
+    return v;
   }
   function perksFromString(p) {
     return p ? String(p).split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];

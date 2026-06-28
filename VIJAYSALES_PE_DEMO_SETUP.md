@@ -20,8 +20,10 @@ Scope now: **UC1 Category**, **UC3 Loyalty**, **UC4 City**. Festival is deferred
 | UC4 | `vs_city` | `Selected City` | `greeting`, `subText`, `storeCallout` |
 
 The page registers these (empty defaults) via `clevertap.defineVariable(name, obj)` in `wzrk.onload`,
-and reads them with the synchronous `clevertap.getVariables()`. Objects are used (no nested arrays —
-`perks` is a comma-separated string the page splits).
+and reads them with the synchronous `clevertap.getVariables()`. **The variable can be either an
+Object/map type OR a String type holding the JSON text — the page handles both** (it `JSON.parse`s
+the value when CleverTap returns it as a string, which is what String-type variables do). No nested
+arrays — `perks` is a comma-separated string the page splits.
 
 ---
 
