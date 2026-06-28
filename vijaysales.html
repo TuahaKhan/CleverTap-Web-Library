@@ -46,43 +46,40 @@
   /* ════════════════════════════════════════════════════════════════════════════════════
      ║  CLEVERTAP PRODUCT EXPERIENCE (PE) — VARIABLE DEFAULTS                               ║
      ║                                                                                      ║
-     ║  These 4 variables drive the 4 demo use cases. The DEFAULT value here is used when    ║
-     ║  the dashboard has no override OR the user is not in a targeted segment. On the        ║
-     ║  dashboard you OVERRIDE these per-segment via a PE campaign — no code redeploy.        ║
+     ║  These 11 FLAT variables drive the 4 demo use cases. The DEFAULT value here is used   ║
+     ║  when the dashboard has no override OR the user is not in a targeted segment. On the   ║
+     ║  dashboard you OVERRIDE them per-segment via a Product Experience — no code redeploy.  ║
      ║                                                                                      ║
-     ║  IMPORTANT (per SDK source review):                                                   ║
-     ║   • Variables must be registered with clevertap.defineVariable(name, value) AFTER the ║
-     ║     SDK loads — the pre-load `clevertap.variables.push()` queue is NOT processed for  ║
-     ║     variables. We therefore define them in wzrk.onload below, from this map.          ║
-     ║   • Each default MUST be a real JS OBJECT (not a JSON string), so the SDK registers   ║
-     ║     it as an object and the dashboard expands its nested keys.                         ║
+     ║  IMPORTANT (verified against Web SDK v2.7.2 source):                                  ║
+     ║   • Variables are registered with clevertap.defineVariable(name, value) AFTER the SDK ║
+     ║     loads (in wzrk.onload below) — the pre-load `clevertap.variables.push()` queue is  ║
+     ║     NOT processed for variables.                                                       ║
+     ║   • We use FLAT primitives (string / boolean) only. Object variables are supported but ║
+     ║     REJECT nested arrays (variable.js:60), so flat values are the safe, simple choice. ║
+     ║     (Lists like loyalty perks are stored as a comma-separated string and split in JS.) ║
      ║                                                                                      ║
-     ║  Variable NAMES must match EXACTLY what appears on the dashboard after syncing.        ║
+     ║  Variable NAMES must match EXACTLY what you create on the dashboard.                   ║
      ║  See VIJAYSALES_PE_DEMO_SETUP.md for step-by-step dashboard setup.                     ║
      ╚════════════════════════════════════════════════════════════════════════════════════ */
   window.VS_PE_VARS = {
-    // UC1 — Category Affinity Re-ranking. boostedCategory = category to surface on next visit.
-    "vs_category_priority": { boostedCategory: "", headline: "Recommended for You" },
+    // ── UC1: Category Affinity ── value to surface on next visit; "" = none.
+    "vs_boosted_category":      "",                       // String: "Air Conditioners" | "TV & Entertainment" | "Microwave"
 
-    // UC2 — Festival / Sale Theme. Flip `active` to true on the dashboard to re-skin the site.
-    "vs_festival_theme": {
-      active: false, name: "Diwali Dhamaka",
-      ribbonText: "🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI",
-      accentColor: "#d35400", headerBg: "#2a0a3a", countdownText: "Hurry! Sale ends in 2 days"
-    },
+    // ── UC2: Festival / Sale Theme ── marketing flips these to re-skin the site, no deploy.
+    "vs_festival_active":       false,                    // Boolean
+    "vs_festival_ribbon_text":  "🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI",  // String
+    "vs_festival_accent_color": "#d35400",                // String (hex)
 
-    // UC3 — Login + Loyalty-Tier. Default is the GUEST / logged-out experience.
-    "vs_loyalty_config": {
-      tier: "Guest", greeting: "Sign in for member prices, faster checkout & order tracking",
-      accentColor: "#c0392b", perks: ["Member-only prices", "Faster checkout"], showPerksStrip: false
-    },
+    // ── UC3: Login + Loyalty Tier ── set per tier segment; empty greeting = guest.
+    "vs_loyalty_tier_label":    "",                       // String: "Silver" | "Gold" | "Platinum"
+    "vs_loyalty_greeting":      "",                       // String
+    "vs_loyalty_perks":         "",                       // String: comma-separated, e.g. "Free installation,Priority delivery"
+    "vs_loyalty_accent_color":  "#b8860b",                // String (hex)
 
-    // UC4 — City / Language Localization. Default targets Mumbai (Marathi).
-    "vs_city_config": {
-      city: "Mumbai", language: "Marathi", greeting: "नमस्कार मुंबई! 🙏",
-      subText: "मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर",
-      storeCallout: "Nearest store: Vijay Sales, Andheri West — 2.3 km", show: true
-    }
+    // ── UC4: City / Language ── set per City geo-segment; default = Mumbai (Marathi).
+    "vs_city_greeting":         "नमस्कार मुंबई! 🙏",        // String
+    "vs_city_subtext":          "मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर",  // String
+    "vs_city_store_callout":    "Nearest store: Vijay Sales, Andheri West — 2.3 km"  // String
   };
 
   (function () {
@@ -108,7 +105,7 @@
           window.__vsVarsDefined = true;
           console.log('[VS_PE] Defined variables:', Object.keys(window.VS_PE_VARS));
         } else {
-          console.warn('[VS_PE] clevertap.defineVariable missing — is the Web SDK v1.11.10+?');
+          console.warn('[VS_PE] clevertap.defineVariable missing — is the Web SDK v1.7.0+ loaded?');
         }
 
         // Randomly assign Even or Odd cohort
@@ -340,8 +337,8 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC2 — FESTIVAL / SALE THEME RIBBON
-     Content + colours come from the PE variable `vs_festival_theme`. Hidden by default;
-     shown only when marketing sets active=true on the dashboard. No code deploy needed.
+     Content + colours come from PE variables `vs_festival_active` / `vs_festival_ribbon_text`
+     / `vs_festival_accent_color`. Hidden until marketing sets vs_festival_active=true.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div id="vs-festival-ribbon">
   <span id="vs-festival-text">🪔 Festival Sale</span>
@@ -416,8 +413,8 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC4 — CITY / LANGUAGE LOCALIZATION STRIP
-     Copy comes from the PE variable `vs_city_config`, overridden per City geo-segment on
-     the dashboard (e.g. Mumbai → Marathi, Delhi → Hindi). Falls back to the default value.
+     Copy comes from PE variables `vs_city_greeting` / `vs_city_subtext` / `vs_city_store_callout`,
+     overridden per City geo-segment (Mumbai → Marathi, Delhi → Hindi). Falls back to defaults.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div class="vs-strip" id="vs-city-strip" style="display:none">
   <div class="vs-strip-inner">
@@ -431,8 +428,8 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC3 — LOGIN + LOYALTY-TIER STRIP
-     GUEST state = sign-in nudge. After login, `vs_loyalty_config` (segment-targeted by
-     loyalty tier) drives the greeting, accent colour and perks chips.
+     GUEST state = sign-in nudge. After login, the `vs_loyalty_*` variables (segment-targeted
+     by loyalty tier) drive the tier label, greeting, accent colour and perks chips.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div class="vs-strip" id="vs-loyalty-strip">
   <div class="vs-strip-inner">
@@ -445,7 +442,7 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC1 — "RECOMMENDED FOR YOU" PERSONALIZED HERO
-     Shown only when `vs_category_priority.boostedCategory` is set (i.e. CleverTap has
+     Shown only when `vs_boosted_category` is set (i.e. CleverTap has
      learned this user's category affinity and a PE campaign pushed the value). The nav
      bar + category rail are also re-ordered/highlighted by JS for the same category.
      ════════════════════════════════════════════════════════════════════════════════ -->
@@ -996,23 +993,13 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 var VS_PE = (function () {
   "use strict";
 
-  /* Variable names — MUST match exactly what you create on the CleverTap dashboard. */
-  var VAR = {
-    category: 'vs_category_priority',
-    festival: 'vs_festival_theme',
-    loyalty:  'vs_loyalty_config',
-    city:     'vs_city_config'
-  };
+  /* The flat PE variable names this demo reads. Defaults live in window.VS_PE_VARS (<head>),
+     which is also what clevertap.defineVariable registers. Names must match the dashboard. */
+  // (Names are referenced directly via val('vs_...') in the resolvers below.)
 
-  /* Defaults — mirror the defaultValue JSON declared in <head>. Used when PE returns nothing. */
-  var DEFAULTS = {
-    category: { boostedCategory: "", headline: "Recommended for You" },
-    festival: { active: false },
-    loyalty:  { tier: "Guest", greeting: "Sign in for member prices, faster checkout & order tracking", perks: ["Member-only prices", "Faster checkout"], showPerksStrip: false },
-    // Mirrors the head defaultValue for vs_city_config so the localization strip is visible
-    // on first load (Mumbai/Marathi). On the dashboard you override this per City segment.
-    city:     { city: "Mumbai", language: "Marathi", greeting: "नमस्कार मुंबई! 🙏", subText: "मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर", storeCallout: "Nearest store: Vijay Sales, Andheri West — 2.3 km", show: true }
-  };
+  // Guest (logged-out) copy for UC3 — shown until a real login + tier segment applies.
+  var GUEST_GREETING = "Sign in for member prices, faster checkout & order tracking";
+  var GUEST_PERKS = ["Member-only prices", "Faster checkout"];
 
   /* Per-category presentation for UC1's "Recommended for you" hero + which nav link / rail
      tile to boost. Keys are the category values your events emit (see wiring below). */
@@ -1064,38 +1051,50 @@ var VS_PE = (function () {
   /* Live PE values fetched from the server (parsed objects), keyed by variable name. */
   var liveVars = {};
 
-  function parse(v) {
-    if (v === null || v === undefined) return null;
-    if (typeof v === 'string') { try { return JSON.parse(v); } catch (e) { return v; } }
-    return v;
+  /* Read a single flat variable: live (server/fetched) value if present, else the <head>
+     default from window.VS_PE_VARS. getVariables() values are primitives — no parsing. */
+  function val(name) {
+    if (liveVars[name] !== undefined) return liveVars[name];
+    return (window.VS_PE_VARS && window.VS_PE_VARS[name] !== undefined) ? window.VS_PE_VARS[name] : undefined;
   }
 
-  /* ── Config resolvers: demo override > live PE value > default ────────────────────────── */
+  /* ── View builders: demo override (SIM) > live PE value > <head> default ──────────────────
+     Each returns the object shape the matching applier expects. */
   function festivalCfg() {
     var d = demoState();
-    if (d.festival === 'on')  return SIM.festival;                 // demo override
-    if (d.festival === 'off') return { active: false };            // demo override
-    return liveVars[VAR.festival] || DEFAULTS.festival;            // live PE / default
+    if (d.festival === 'on')  return { active: true, ribbonText: SIM.festival.ribbonText, accentColor: SIM.festival.accentColor, countdownText: SIM.festival.countdownText };
+    if (d.festival === 'off') return { active: false };
+    var active = val('vs_festival_active');
+    return { active: active === true || active === 'true',
+             ribbonText: val('vs_festival_ribbon_text'),
+             accentColor: val('vs_festival_accent_color') };
   }
   function cityCfg() {
     var d = demoState();
-    if (d.city && SIM.cities[d.city]) return SIM.cities[d.city];   // demo override
-    return liveVars[VAR.city] || DEFAULTS.city;                    // live PE / default
+    if (d.city && SIM.cities[d.city]) { var c = SIM.cities[d.city]; return { show: true, greeting: c.greeting, subText: c.subText, storeCallout: c.storeCallout, city: c.city }; }
+    var g = val('vs_city_greeting');
+    return { show: !!(g && String(g).length), greeting: g, subText: val('vs_city_subtext'), storeCallout: val('vs_city_store_callout'), city: null };
   }
   function loyaltyCfg() {
     var d = demoState();
     if (d.loggedIn) {
-      if (d.tier && SIM.tiers[d.tier]) return SIM.tiers[d.tier];   // demo override
-      return liveVars[VAR.loyalty] || SIM.tiers.Gold;              // live PE / fallback
+      if (d.tier && SIM.tiers[d.tier]) { var t = SIM.tiers[d.tier]; return { tier: t.tier, greeting: t.greeting, perks: t.perks, accentColor: t.accentColor }; }
+      // Live logged-in: read the flat loyalty vars set by the user's tier segment.
+      var perksStr = val('vs_loyalty_perks');
+      return {
+        tier: val('vs_loyalty_tier_label') || 'Member',
+        greeting: val('vs_loyalty_greeting') || 'Welcome back 👋',
+        perks: perksStr ? String(perksStr).split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [],
+        accentColor: val('vs_loyalty_accent_color')
+      };
     }
-    return liveVars[VAR.loyalty] && liveVars[VAR.loyalty].tier === 'Guest'
-      ? liveVars[VAR.loyalty] : DEFAULTS.loyalty;                  // guest
+    return { tier: 'Guest', greeting: GUEST_GREETING, perks: GUEST_PERKS };  // guest
   }
   function categoryCfg() {
     var d = demoState();
     if (d.boostedCategory !== undefined && d.boostedCategory !== null)
       return { boostedCategory: d.boostedCategory, headline: "Recommended for You" };  // demo override
-    return liveVars[VAR.category] || DEFAULTS.category;            // live PE / default
+    return { boostedCategory: val('vs_boosted_category') || "", headline: "Recommended for You" };
   }
 
   /* ════════════════════════════ UC2 — FESTIVAL / SALE THEME ═══════════════════════════ */
@@ -1230,8 +1229,8 @@ var VS_PE = (function () {
      NO callback — it returns the values (server-fetched, else defaults) from local storage. */
   function pullLiveVars() {
     try {
-      var all = clevertap.getVariables();        // synchronous, no callback
-      if (all) { Object.keys(all).forEach(function (k) { liveVars[k] = parse(all[k]); }); }
+      var all = clevertap.getVariables();        // synchronous, no callback, returns {name: value}
+      if (all) { Object.keys(all).forEach(function (k) { liveVars[k] = all[k]; }); }
     } catch (e) { console.warn('[VS_PE] getVariables error', e); }
   }
 
@@ -1263,7 +1262,7 @@ var VS_PE = (function () {
 
   /* ───────── Affinity capture: fire CleverTap events on category interaction ───────────
      These events are what you build UC1's segments on (e.g. "viewed Air Conditioners
-     category ≥2 times in 7 days"). A PE campaign then sets vs_category_priority for that
+     category ≥2 times in 7 days"). A PE experience then sets vs_boosted_category for that
      segment, and the boosted UI appears on the user's NEXT visit. */
   function wireAffinityEvents() {
     document.querySelectorAll('.nav-inner .nlink').forEach(function (link) {
@@ -1301,7 +1300,7 @@ var VS_PE = (function () {
        per-segment. Needs: Account Token + Region in init, profile marked as Test, DEBUG level. */
     syncToDashboard: function () {
       if (typeof clevertap === 'undefined' || !clevertap.syncVariables) {
-        console.warn('[VS_PE] syncVariables unavailable — is the Web SDK v1.11.10+ loaded?');
+        console.warn('[VS_PE] syncVariables unavailable — is the Web SDK v1.7.0+ loaded?');
         return;
       }
       try { if (clevertap.setLogLevel) clevertap.setLogLevel(4); } catch (e) {} // DEBUG mode (required for sync)
