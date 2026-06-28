@@ -19,6 +19,9 @@
 <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Preconnect to the CleverTap SDK CDN so it initializes sooner (helps the A/B value arrive fast) -->
+<link rel="preconnect" href="https://d2r1yp2w7bby2u.cloudfront.net" crossorigin>
+<link rel="dns-prefetch" href="https://d2r1yp2w7bby2u.cloudfront.net">
 <script type="text/javascript">
   // CleverTap SDK Initialization
   //
@@ -73,7 +76,12 @@
     "vs_loyalty": { tierLabel: "", greeting: "", perks: "", accentColor: "#b8860b" },
 
     // UC4 — driven by user property "Selected City"
-    "vs_city":    { greeting: "", subText: "", storeCallout: "" }
+    "vs_city":    { greeting: "", subText: "", storeCallout: "" },
+
+    // UC5 — A/B TEST (Diwali animation). Plain STRING, delivered to ALL users (no user
+    // property, no targeting). Variant A value = "animation1", Variant B value = "animation2".
+    // NO fail-safe: default is empty, so NOTHING shows until CleverTap delivers the variant.
+    "vs_festival_ab": ""
   };
 
   (function () {
@@ -325,6 +333,15 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 .vs-dp-btn.on{background:var(--vs-accent);border-color:var(--vs-accent);color:#fff}
 .vs-dp-note{font-size:10px;color:#94a3b8;margin-top:4px;line-height:1.4}
 .vs-dp-reset{width:100%;background:#7f1d1d;border:none;color:#fee2e2;border-radius:6px;padding:7px;font-size:11px;cursor:pointer;font-weight:700;margin-top:4px}
+
+/* ── UC5 · A/B TEST — Diwali festival animation overlay (variant chosen by CleverTap) ── */
+#vs-festival-fx{position:fixed;inset:0;pointer-events:none;z-index:350;overflow:hidden;display:none}
+/* Variant A → "animation1": floating diyas rising with a warm glow */
+.vs-diya{position:absolute;bottom:-44px;will-change:transform,opacity;animation:vsRise linear infinite;filter:drop-shadow(0 0 8px #ff9d2f)}
+@keyframes vsRise{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-108vh) rotate(10deg);opacity:0}}
+/* Variant B → "animation2": firework particle bursts */
+.vs-fw{position:absolute;width:7px;height:7px;border-radius:50%;will-change:transform,opacity;animation:vsBurst ease-out forwards}
+@keyframes vsBurst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
 </style>
 </head>
 <body>
@@ -337,6 +354,10 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
   <span id="vs-festival-text">🪔 Festival Sale</span>
   <span class="vs-count" id="vs-festival-count"></span>
 </div>
+
+<!-- UC5 — A/B test animation layer. Populated only when CleverTap delivers `vs_festival_ab`
+     ("animation1" = floating diyas, "animation2" = fireworks). No local fallback. -->
+<div id="vs-festival-fx"></div>
 
 <!-- ── HEADER ── -->
 <header>
@@ -1039,6 +1060,8 @@ var VS_PE = (function () {
     if (typeof v === 'string') { try { return JSON.parse(v); } catch (e) { return null; } }
     return (v && typeof v === 'object') ? v : null;
   }
+  // Raw string value of a PE variable (for the A/B variable, which is a plain string).
+  function pstr(name) { var v = liveVars[name]; return (v == null) ? '' : String(v).trim(); }
   function perksFromString(p) {
     return p ? String(p).split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
   }
@@ -1123,7 +1146,63 @@ var VS_PE = (function () {
     strip.style.display = 'block';
   }
 
-  function renderAll() { renderReco(); renderLoyalty(); renderCity(); }
+  /* ═════════════════ UC5 — A/B TEST: Diwali animation (PURE PE, no fail-safe) ═══════════
+     Reads the plain-string variable `vs_festival_ab`. "animation1" = floating diyas,
+     "animation2" = fireworks. Delivered to ALL users (no user property) so it arrives on the
+     first fetch. NOTHING shows until CleverTap delivers a value — there is intentionally NO
+     local default here (unlike UC1/3/4), so it genuinely demonstrates the A/B value. */
+  var lastFest = null, fwTimer = null;
+  function renderFestival() {
+    var v = pstr('vs_festival_ab').toLowerCase();
+    var which = (v === 'animation1' || v === 'a' || v === '1') ? 'animation1'
+              : (v === 'animation2' || v === 'b' || v === '2') ? 'animation2' : '';
+    if (which === lastFest) return;   // already showing this variant — don't restart
+    lastFest = which;
+    playFestival(which);
+  }
+  function playFestival(which) {
+    var fx = document.getElementById('vs-festival-fx');
+    var ribbon = document.getElementById('vs-festival-ribbon');
+    if (fwTimer) { clearInterval(fwTimer); fwTimer = null; }
+    fx.innerHTML = '';
+    if (!which) { fx.style.display = 'none'; ribbon.style.display = 'none'; return; }
+
+    // Shared festival banner (shown only because PE delivered a variant — still no fail-safe).
+    document.getElementById('vs-festival-text').textContent = '🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI';
+    document.getElementById('vs-festival-count').textContent = '';
+    ribbon.style.display = 'block';
+    fx.style.display = 'block';
+    console.log('[VS_PE] A/B variant (vs_festival_ab) →', which);
+
+    if (which === 'animation1') {                 // Variant A: floating diyas
+      for (var i = 0; i < 16; i++) {
+        var d = document.createElement('span'); d.className = 'vs-diya'; d.textContent = '🪔';
+        d.style.left = (Math.random() * 100) + '%';
+        d.style.fontSize = (20 + Math.random() * 18) + 'px';
+        d.style.animationDuration = (5 + Math.random() * 4) + 's';
+        d.style.animationDelay = (Math.random() * 5) + 's';
+        fx.appendChild(d);
+      }
+    } else {                                       // Variant B: fireworks
+      var colors = ['#ffd166', '#ef476f', '#06d6a0', '#fca311', '#a78bfa'];
+      fwTimer = setInterval(function () {
+        var cx = 10 + Math.random() * 80, cy = 8 + Math.random() * 30;
+        var color = colors[Math.floor(Math.random() * colors.length)];
+        for (var j = 0; j < 14; j++) {
+          var ang = (Math.PI * 2 * j) / 14, dist = 45 + Math.random() * 55;
+          var p = document.createElement('span'); p.className = 'vs-fw';
+          p.style.left = cx + '%'; p.style.top = cy + '%'; p.style.background = color;
+          p.style.setProperty('--dx', (Math.cos(ang) * dist) + 'px');
+          p.style.setProperty('--dy', (Math.sin(ang) * dist) + 'px');
+          p.style.animationDuration = (0.8 + Math.random() * 0.5) + 's';
+          fx.appendChild(p);
+          (function (el) { setTimeout(function () { el.remove(); }, 1400); })(p);
+        }
+      }, 700);
+    }
+  }
+
+  function renderAll() { renderReco(); renderLoyalty(); renderCity(); renderFestival(); }
 
   /* Background fetch from CleverTap; re-render when it arrives (never blocks the UI). */
   function bgFetch() {

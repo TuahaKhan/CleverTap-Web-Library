@@ -18,6 +18,7 @@ Scope now: **UC1 Category**, **UC3 Loyalty**, **UC4 City**. Festival is deferred
 | UC1 | `vs_reco` | `Last Category Clicked` | `category`, `mainText`, `subText`, `image` |
 | UC3 | `vs_loyalty` | `Loyalty Tier` | `tierLabel`, `greeting`, `perks` (comma-separated), `accentColor` |
 | UC4 | `vs_city` | `Selected City` | `greeting`, `subText`, `storeCallout` |
+| UC5 | `vs_festival_ab` | *(none — A/B test)* | plain **String**: `animation1` or `animation2` |
 
 The page registers these (empty defaults) via `clevertap.defineVariable(name, obj)` in `wzrk.onload`,
 and reads them with the synchronous `clevertap.getVariables()`. **The variable can be either an
@@ -80,6 +81,28 @@ variable → add a segment/condition on the user property → set the object val
 
 ---
 
+### UC5 — A/B TEST (`vs_festival_ab`) — Diwali animation
+*Two creative treatments split 50/50 across all users — no targeting, no user property.*
+
+This is different from UC1/3/4 on purpose:
+- **It's an A/B test, not property targeting.** Create the variable `vs_festival_ab` (type **String**),
+  sync it, then go to **A/B Testing**, pick `vs_festival_ab`, add **two variants at 50/50**:
+  - **Variant A** value: `animation1`
+  - **Variant B** value: `animation2`
+  Publish. CleverTap delivers one value to every visitor (sticky per user) on the first fetch.
+- **The page already codes BOTH animations.** It reads the value and plays:
+  - `animation1` → **floating diyas** 🪔
+  - `animation2` → **fireworks** 🎆
+  (plus a shared "Diwali Dhamaka Sale" ribbon). You only send `animation1` / `animation2`.
+- **No fail-safe / no default.** Unlike UC1/3/4, this use case does **not** fall back to a local copy —
+  nothing shows until CleverTap delivers the variant. That's intentional so it genuinely demonstrates
+  the A/B value coming from CleverTap. It's still fast because it's delivered to all users on the first
+  page-view fetch (no user-property round-trip).
+- **Prefer text over animation?** If you'd rather A/B two pieces of *text*, tell me — I'll flip the page
+  to render the variant value as ribbon text instead (then Variant A / B values become the text strings).
+
+---
+
 ## 4. The runtime flow (what happens on each trigger)
 
 1. **Trigger** — the page calls `clevertap.profile.push({ "Site": { "<property>": "<value>" } })`:
@@ -112,4 +135,7 @@ reload is instant too. The console still logs `[VS_PE] PE values: {...}` so you 
 ## 6. Notes
 - Variable **names** (`vs_reco`, `vs_loyalty`, `vs_city`) and **field keys** must match exactly.
 - Account **token** is only for `syncVariables()`; production/anonymous visitors don't need it.
-- Festival theme will be added the same way (its own variable + trigger) once these 3 are confirmed.
+- **Anonymous identity (by design):** the page never sends `Identity` / `email` / `phone` and never
+  calls `onUserLogin` — it only does `clevertap.profile.push({Site:{...}})` with non-identity
+  properties. So every visitor gets a fresh anonymous CleverTap ID, and **clearing the browser
+  cache/cookies generates a brand-new ID** — handy for re-rolling the A/B variant during a demo.
