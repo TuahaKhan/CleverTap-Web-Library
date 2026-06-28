@@ -37,7 +37,8 @@
     token:  'YOUR_ACCOUNT_TOKEN'  // ⬅️ paste your Account Token from Dashboard → Settings
   };
 
-  clevertap.account.push({ "id": "WW6-988-RW7Z" });
+  // Keep ONLY this single account.push line (account ID goes here; token/region go above).
+  clevertap.account.push({ "id": "449-RRZ-7W7Z" });
   clevertap.privacy.push({ optOut: false });
   // CHANGED: useIP set to true (was false). The City/Language use case (UC4) relies on
   // CleverTap auto-deriving the user's City from their IP so you can build geo segments.
