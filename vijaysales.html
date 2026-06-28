@@ -23,7 +23,19 @@
   // CleverTap SDK Initialization
   // NOTE: we added `variables: []` to the queue object below — this is REQUIRED so we can
   //       define Product Experience (Remote Config) variables before the SDK finishes loading.
-  var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], variables: [] };
+  //
+  // ── MANUAL STEP (REQUIRED for Product Experience / Remote Config) ──────────────────────
+  //    `region` and `token` (Account Token) MUST be set, or syncVariables()/remote-config
+  //    throw "Account token is missing." Find both at:
+  //        Dashboard → Settings → Project   (Account ID, Account Token, Region)
+  //    The web Account Token is a client-side token (already visible on any site that uses
+  //    CleverTap), but avoid committing the real value to a public repo — paste it here
+  //    locally for the demo, or inject it at deploy time.
+  var clevertap = {
+    event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], variables: [],
+    region: 'YOUR_REGION',       // ⬅️ e.g. 'in1', 'eu1', 'us1', 'sg1', 'aps3' (see Settings)
+    token:  'YOUR_ACCOUNT_TOKEN'  // ⬅️ paste your Account Token from Dashboard → Settings
+  };
 
   clevertap.account.push({ "id": "WW6-988-RW7Z" });
   clevertap.privacy.push({ optOut: false });
@@ -1258,6 +1270,28 @@ var VS_PE = (function () {
       // First render with defaults immediately (no blank flash), then refine with live PE.
       renderAll();
       window.addEventListener('load', function () { setTimeout(fetchAndRender, 1500); });
+
+      // ONE-TIME variable registration: open this page as your TEST PROFILE with ?ctsync=1
+      // (e.g. vijaysales.html?ctsync=1) to push the variable DEFINITIONS to the dashboard.
+      // Requires Account Token + Region in the init above. Remove the flag for normal demos.
+      if (location.search.indexOf('ctsync') > -1 || location.hash.indexOf('ctsync') > -1) {
+        window.addEventListener('load', function () { setTimeout(function () { VS_PE.syncToDashboard(); }, 2500); });
+      }
+    },
+
+    /* ONE-TIME: register the variable DEFINITIONS on the dashboard so you can override them
+       per-segment. Needs: Account Token + Region in init, profile marked as Test, DEBUG level. */
+    syncToDashboard: function () {
+      if (typeof clevertap === 'undefined' || !clevertap.syncVariables) {
+        console.warn('[VS_PE] syncVariables unavailable — is the Web SDK v1.11.10+ loaded?');
+        return;
+      }
+      try { if (clevertap.setLogLevel) clevertap.setLogLevel(4); } catch (e) {} // DEBUG mode (required for sync)
+      console.log('[VS_PE] Syncing variable definitions to dashboard…');
+      clevertap.syncVariables(
+        function () { console.log('[VS_PE] ✅ Synced. Open Dashboard → Product Experiences → Variables.'); },
+        function (err) { console.warn('[VS_PE] ❌ Sync failed:', err, '\n→ Checklist: Account Token + Region set in init? Profile marked as Test? Any open draft to publish/discard first?'); }
+      );
     },
 
     /* UC3 — login. Identifies the user & re-fetches PE so segment-targeted (tier) values apply. */
