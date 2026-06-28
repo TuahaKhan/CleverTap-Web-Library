@@ -1,17 +1,18 @@
 # Vijay Sales — CleverTap Product Experience (PE) Demo
 
-This guide explains the **4 Product Experience (Remote Config Variables)** use cases built
-into `vijaysales.html`, the **dashboard setup** required for each, the **manual changes**
-already made in code, and a **stage-ready demo script**.
+This guide explains the **4 Product Experience (Remote Config Variables)** use cases built into
+`vijaysales.html`, the **dashboard setup** for each, the **manual changes** already made in code,
+and a **stage-ready demo script**.
 
-> **Why Product Experience (Variables) for these — and not Web Pop-ups / Native Display / Visual Editor?**
-> PE Variables let the **website's own rendering logic** consume server-controlled values.
-> These 4 use cases all change *structure/behaviour* (re-ordering the nav & category rail,
-> re-skinning the whole site via one accent token, switching localized copy keyed to a geo
-> segment, gating layout on loyalty tier). Pop-ups/Native Display can only *overlay* content,
-> and the Visual Editor only does static one-off element tweaks — none of them can re-rank a
-> category list or theme the site from a single segment-targeted value without a code deploy.
-> That's exactly the gap PE fills, so the demo stays honest about where PE is the right tool.
+> **API facts below are verified against CleverTap Web SDK v2.7.2 source** (the build served by
+> the CloudFront CDN this page loads). The earlier object-variable approach was scrapped because
+> object variables reject nested arrays; we now use **flat primitive variables (string/boolean)**,
+> which are simpler to create on the dashboard and bulletproof.
+
+> **Why Product Experience and not Web Pop-ups / Native Display / Visual Editor?** These 4 use
+> cases change the page's *structure/behaviour* (re-ranking the nav & category rail, re-skinning
+> via one accent token, swapping localized copy per geo-segment, gating layout on loyalty tier) —
+> things overlays and one-off visual edits can't do. That's where PE Variables are the right tool.
 
 ---
 
@@ -19,167 +20,131 @@ already made in code, and a **stage-ready demo script**.
 
 | Item | Value |
 |---|---|
-| Web SDK version | **v1.11.10 or higher** (variable sync to dashboard requires this) |
-| Account ID (in code) | `WW6-988-RW7Z` — change in `vijaysales.html` `<head>` if you use a different demo account |
-| **Account Token + Region** | **REQUIRED for Remote Config.** Without them `syncVariables()` throws *"Account token is missing."* Find both at **Dashboard → Settings → Project**. Paste into the `token` and `region` fields in the `<head>` init. |
-| Test profile | Mark your own profile as a **Test Profile** in the dashboard (needed to sync & preview variables) |
-| `useIP` | Set to **`true`** in code (already done) so CleverTap derives **City** from IP for UC4 geo-segments |
+| Web SDK version | **v1.7.0+** (the CDN serves the latest, currently **v2.7.2** — fully supported). Confirm with `clevertap.getSDKVersion()`. |
+| Account ID (in code) | `449-RRZ-7W7Z` — in `vijaysales.html` `<head>` `clevertap.account.push({id})` |
+| **Region** | **REQUIRED** — routes requests to the right data centre. Set `region` (top-level) in the init: one of `in1 / sg1 / us1 / aps3 / mec1 / eu1`. |
+| **Account Token (Passcode)** | Required for **`syncVariables()` only** (the one-time dashboard registration). Find at **Dashboard → Settings → Passcode**. Set `token` (top-level) in the init. *Not* needed for runtime `fetchVariables()`/`getVariables()`. |
+| Test profile | Mark your profile as a **Test Profile** (needed only to sync/preview). |
+| `useIP` | Set to `true` in code (done) so CleverTap derives **City** from IP for UC4 geo-segments. |
 
-> **Note on the Account Token:** it's a *client-side* token (already visible on any site using
-> CleverTap), so it's not a server API secret — but don't commit the real value to a public repo.
-> Paste it locally for the demo, or inject it at deploy time.
+> The Account Token (Passcode) is only checked inside `syncVariables` — **anonymous/logged-out
+> visitors receive segment-targeted values with just the account ID + region** (CleverTap targets
+> them via their anonymous `GCOOKIE`). So production visitors do not need the token.
 
 ---
 
-## 1. Register the 4 variables on the dashboard
+## 1. Create the 11 variables on the dashboard
 
-The variables are already **defined in code** (`vijaysales.html` `<head>`, in the
-`clevertap.variables.push({...})` block). **Defining them does NOT push them to the dashboard** —
-you must explicitly **sync** them once. Sync requires *all* of: SDK v1.11.10+, Account Token +
-Region set in init, your profile marked as Test, DEBUG log level, and no open draft.
+Variables are registered in code via `clevertap.defineVariable(name, default)` inside `wzrk.onload`
+(the pre-load `clevertap.variables.push()` queue is **not** processed for variables). To make them
+appear on the dashboard so you can override them, **sync once** (Section 1a), or create them
+manually with these exact names/types/defaults:
 
-**Option A — One-click sync (built into the page):** set your `token`/`region` in the `<head>`,
-mark your profile as Test, then open the page as that profile with the sync flag:
+| # | Variable name | Type | Default |
+|---|---|---|---|
+| UC1 | `vs_boosted_category` | String | *(empty)* — values: `Air Conditioners` / `TV & Entertainment` / `Microwave` |
+| UC2 | `vs_festival_active` | Boolean | `false` |
+| UC2 | `vs_festival_ribbon_text` | String | `🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI` |
+| UC2 | `vs_festival_accent_color` | String | `#d35400` |
+| UC3 | `vs_loyalty_tier_label` | String | *(empty)* — e.g. `Gold` |
+| UC3 | `vs_loyalty_greeting` | String | *(empty)* — e.g. `Welcome back, Gold member 👑` |
+| UC3 | `vs_loyalty_perks` | String | *(empty)* — comma-separated, e.g. `Free installation,Priority delivery,Extended warranty` |
+| UC3 | `vs_loyalty_accent_color` | String | `#b8860b` |
+| UC4 | `vs_city_greeting` | String | `नमस्कार मुंबई! 🙏` |
+| UC4 | `vs_city_subtext` | String | `मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर` |
+| UC4 | `vs_city_store_callout` | String | `Nearest store: Vijay Sales, Andheri West — 2.3 km` |
+
+> **Value types:** only flat **String / Boolean / Number**. Lists (loyalty perks) are a
+> comma-separated **string** that the page splits in JS — this avoids the SDK's nested-array
+> restriction on object variables.
+
+### 1a. Sync the definitions to the dashboard (one-time)
+
+Set `region` + `token` in the `<head>`, mark your profile as **Test**, then open the page as that
+profile with the built-in sync flag:
 
 ```
 vijaysales.html?ctsync=1
 ```
 
-The page calls `setLogLevel(4)` + `syncVariables()` for you and logs the result to the console
-(`[VS_PE] ✅ Synced…`). Then remove the `?ctsync=1` flag for normal demos.
+The page runs `clevertap.setLogLevel(4)` (DEBUG) + `clevertap.syncVariables()` and logs the result.
+You should see `[VS_PE] Defined variables: [...]` then `[VS_PE] ✅ Synced…`. Refresh
+**Dashboard → Product Experiences → Variables** — all 11 appear. Remove `?ctsync=1` afterwards.
 
-**Option B — Manual console sync:** while loaded as your test profile, run:
-
-```js
-clevertap.setLogLevel(4);                 // DEBUG mode (required for sync)
-clevertap.syncVariables(
-  () => console.log('Sync successful — check Product Experiences > Variables'),
-  () => console.log('Sync failed — set Account Token+Region, mark Test profile, publish/dismiss any draft')
-);
-```
-
-**Option C — Create them manually** under **Product Experiences → Variables → Create**, using
-the exact names, types and defaults below.
-
-| # | Variable name | Type | Default value (JSON) |
-|---|---|---|---|
-| UC1 | `vs_category_priority` | JSON (string) | `{"boostedCategory":"","headline":"Recommended for You"}` |
-| UC2 | `vs_festival_theme` | JSON (string) | `{"active":false,"name":"Diwali Dhamaka","ribbonText":"🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI","accentColor":"#d35400","headerBg":"#2a0a3a","countdownText":"Ends in 2 days"}` |
-| UC3 | `vs_loyalty_config` | JSON (string) | `{"tier":"Guest","greeting":"Sign in for member prices, faster checkout & order tracking","accentColor":"#c0392b","perks":["Member-only prices","Faster checkout"],"showPerksStrip":false}` |
-| UC4 | `vs_city_config` | JSON (string) | `{"city":"Mumbai","language":"Marathi","greeting":"नमस्कार मुंबई! 🙏","subText":"मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर","storeCallout":"Nearest store: Vijay Sales, Andheri West — 2.3 km","show":true}` |
-
-> **Note on value type:** the demo stores each config as a **JSON string** and parses it
-> client-side (the convention already used in `sample_pe_demo.html`). If you prefer, CleverTap
-> also supports native string/number/boolean variables — but JSON keeps each use case in one
-> editable value, which is easier to manage from the dashboard.
+**If sync fails**, check (all must be true): SDK v1.7.0+, **token + region set**, **profile marked
+Test** (else 401 "not a test profile"), and **no existing draft** (else 400 — discard it under
+Product Experiences → Variables → Discard Draft). You only re-sync when you add/rename a variable.
 
 ---
 
-## 2. Use-case-by-use-case dashboard setup
+## 2. Per-use-case: segments + Product Experiences
 
-For **every** use case the pattern is the same:
-**(a)** an event/property makes the user fall into a **Segment** → **(b)** a **Product Experience
-campaign** overrides the variable's value **for that segment** → **(c)** the SDK fetches the
-value (on load, or after `fetchVariables()`), and the page re-renders.
+For each use case: **(a)** an event/property puts the user in a **Segment** → **(b)** a
+**Product Experience** sets the variable value(s) for that segment → **(c)** the SDK fetches the
+value (auto on first page view of a session, or via `fetchVariables()`) and the page re-renders.
+
+**Dashboard flow to override a value:** Product Experiences → Variables → **+ Create Experience** →
+pick the variable → set Control (default) + Variant value → **add a segment** → **Publish**.
 
 ### UC1 — Category Affinity Re-ranking
-*Goal: a user who keeps browsing ACs sees ACs surfaced (nav, category rail, "For You" hero) on their next visit.*
-
-- **Event captured by the page:** `Category Viewed` with property `Category` (fired from the top
-  nav and the "Shop by Category" rail — see `wireAffinityEvents()` in code).
-- **Segment to create:** *"Users who raised `Category Viewed` with `Category = Air Conditioners`
-  at least 2 times in the last 7 days"* (repeat for `TV & Entertainment`, `Microwave`).
-- **PE campaign:** override `vs_category_priority` → set
-  `{"boostedCategory":"Air Conditioners","headline":"Recommended for You"}` for the AC segment
-  (and the matching value for the TV / Microwave segments).
-- **Result:** on next load the page reads the value, **moves the matching nav link & category
-  tile to the front + highlights them**, and shows a personalized **"Recommended for you" hero**.
-- Accepted `boostedCategory` values (mapped in code's `CATEGORY_META`): `Air Conditioners`,
-  `TV & Entertainment`, `Microwave`.
+*A user who keeps browsing ACs sees ACs surfaced (nav, category rail, "For You" hero) next visit.*
+- **Event the page fires:** `Category Viewed` with property `Category` (from nav + category-rail clicks).
+- **Segments:** e.g. *did `Category Viewed` where `Category = Air Conditioners` ≥1× in 7 days* (repeat for `TV & Entertainment`, `Microwave`).
+- **Experience:** set **`vs_boosted_category`** = `Air Conditioners` (resp. `TV & Entertainment` / `Microwave`) for each segment.
 
 ### UC2 — Festival / Sale Theme Switch
-*Goal: marketing flips the whole site into a sale skin, instantly, with no developer/deploy.*
-
-- **Segment:** usually **All Users** (or a segment, e.g. only "high-value" users see the sale early).
-- **PE campaign:** override `vs_festival_theme` → set `active: true` and edit `ribbonText`,
-  `accentColor`, `countdownText` to taste. Setting `active:false` (or ending the campaign) reverts.
-- **Result:** a top **sale ribbon** appears and the site **accent colour** (`--vs-accent`,
-  applied to "Add to Cart" buttons, discount badges, the Loyalty Hub link, etc.) re-skins live.
-- No events needed — this is a pure marketing-controlled toggle.
+*Marketing flips the whole site into a sale skin, instantly, no deploy.*
+- **Segment:** All Users (or a VIP segment for early access).
+- **Experience:** set **`vs_festival_active`** = `true`, **`vs_festival_ribbon_text`**, **`vs_festival_accent_color`**. Setting active back to `false` (or ending it) reverts.
 
 ### UC3 — Login + Loyalty-Tier Personalization
-*Goal: guests get a sign-in nudge; members get tier-specific greeting, accent and perks.*
-
-- **Profile property:** `Loyalty Tier` (`Silver` / `Gold` / `Platinum`) — set at login via
-  `onUserLogin` (the code pushes it; in production it comes from your auth/CRM).
-- **Segments:** one per tier on the `Loyalty Tier` property.
-- **PE campaigns:** override `vs_loyalty_config` per tier segment, e.g. for Gold:
-  `{"tier":"Gold","greeting":"Welcome back, Gold member 👑","accentColor":"#b8860b","perks":["Free installation","Priority delivery","Extended warranty","Exclusive Gold prices"],"showPerksStrip":true}`.
-- **Important (Web):** because login changes the profile/segment, the page calls
-  **`clevertap.fetchVariables()` right after `onUserLogin`** so the tier value applies in-session
-  (already wired in `simulateLogin()`). Guests keep the default (sign-in nudge).
+*Guests get a sign-in nudge; members get tier-specific greeting, accent, perks.*
+- **Profile property:** `Loyalty Tier` (Silver/Gold/Platinum), set at login (the page pushes it via `onUserLogin`).
+- **Segments:** one per tier on `Loyalty Tier`.
+- **Experience per tier:** set **`vs_loyalty_tier_label`**, **`vs_loyalty_greeting`**, **`vs_loyalty_perks`** (comma-separated), **`vs_loyalty_accent_color`**.
+- The page calls `fetchVariables()` right after login so the tier values apply in-session. Guests (no values) see the default nudge.
 
 ### UC4 — City / Language Localization
-*Goal: Mumbai sees Marathi, Delhi sees Hindi, Bengaluru sees Kannada + nearest-store callout.*
-
-- **Property:** `City` — auto-derived by CleverTap from IP (because `useIP:true`), or set explicitly.
-- **Segments:** one per city on the `City` property.
-- **PE campaigns:** override `vs_city_config` per city segment with localized
-  `greeting` / `subText` / `storeCallout`, e.g. Delhi:
-  `{"city":"Delhi","language":"Hindi","greeting":"नमस्ते दिल्ली! 🙏","subText":"दिल्ली में तेज़ डिलीवरी और नज़दीकी स्टोर","storeCallout":"Nearest store: Vijay Sales, Nehru Place — 1.8 km","show":true}`.
-- **Result:** a localized greeting strip + store callout under the header; the header city label updates too.
+*Mumbai → Marathi, Delhi → Hindi, Bengaluru → Kannada + nearest-store callout.*
+- **Property:** `City` (auto from IP, since `useIP:true`).
+- **Segments:** one per city.
+- **Experience per city:** set **`vs_city_greeting`**, **`vs_city_subtext`**, **`vs_city_store_callout`**.
 
 ---
 
-## 3. Manual changes already made in `vijaysales.html`
+## 3. What changed in `vijaysales.html` (already done)
 
-Everything below is **done** — listed so you know what changed and what to revisit for production:
-
-1. **`variables: []`** added to the `clevertap` queue object (required to define variables pre-load).
-2. **`useIP` changed `false → true`** to enable City geo-segments for UC4.
-3. **4 `clevertap.variables.push({...})`** definitions added (the variables table above).
+1. **`region` + `token`** added as top-level properties on the `clevertap` object.
+2. **`useIP` `false → true`** for UC4 City geo-segments.
+3. **11 flat variables** registered via `clevertap.defineVariable(name, value)` in `wzrk.onload`, from the `window.VS_PE_VARS` map (String/Boolean only — no nested arrays).
 4. Hardcoded brand red `#c0392b` replaced with the **`--vs-accent`** CSS variable so UC2 can re-skin.
-5. New HTML containers added: festival ribbon, city strip, loyalty strip, "Recommended" hero.
-6. A single **`VS_PE` engine `<script>`** that fetches the variables and applies all 4 use cases,
-   plus a **floating "Demo Controls" panel**.
+5. New HTML: festival ribbon, city strip, loyalty strip, "Recommended" hero.
+6. A **`VS_PE` engine `<script>`** that reads values with the **synchronous** `clevertap.getVariables()`, applies all 4 use cases, re-applies on `addVariablesChangedCallback`, and renders a **Demo Controls** panel.
 
-**What you MUST fill in manually before the dashboard flow works:** the **`region`** and
-**`token`** (Account Token) placeholders in the `<head>` init — without them Remote Config throws
-*"Account token is missing."* Optionally also change the **account ID** (if demoing on another
-account) and the `CATEGORY_META` image URLs / copy in the script.
+**You must fill in** the real **`region`** + **`token`** in the `<head>` before syncing. Optionally
+change the account ID or the `CATEGORY_META` image URLs/copy.
 
 ---
 
-## 4. Demo script (how to present on stage)
+## 4. How values resolve at runtime (so the two screens line up)
 
-The floating **"CleverTap PE — Demo Controls"** panel (bottom-left) lets you force each state
-instantly so the demo never depends on live network/segment timing:
+Precedence in code: **demo-control override (localStorage) → live PE value (`getVariables()`) → `<head>` default.**
 
-1. **Open with localization** — point out the **Marathi** greeting (Mumbai). Click **Delhi** →
-   it flips to **Hindi** + Nehru Place store. *"This copy is one variable, targeted per city
-   segment — zero code change."*
-2. **Festival** — click **Diwali ON** → ribbon drops in and the **whole site recolors**.
-   *"Marketing flips this the morning of the sale; no deploy, no dev ticket."* Click **OFF** to revert.
-3. **Loyalty** — start as guest (sign-in nudge), click **Gold** → member greeting + perks; click
-   **Platinum** → richer perks. *"The page re-fetches PE right after login, so the tier
-   experience applies in the same session."*
-4. **Category affinity** — click **AC** → AC jumps to the front of the nav + category rail and a
-   personalized hero appears. *"After a few AC views, CleverTap segments the user and a PE
-   campaign boosts that category on their next visit."* Click **TV** to show it generalizes.
-5. **Reset demo** clears the forced states.
+- The **Demo Controls** panel (bottom-left) forces states for a reliable stage demo.
+- To show the **real dashboard value** driving the site, click **Reset demo** first (clears the
+  local override), reload, and watch the console log `[VS_PE] Live PE variables: {...}`.
+- Easiest to show genuinely live end-to-end: **UC2 (festival)** and **UC4 (city)** — no login needed.
 
-> The page **also** reads real values from `clevertap.getVariables()`, so once your dashboard
-> campaigns are live you can demo the genuine end-to-end flow too. The demo panel just guarantees
-> a clean stage experience.
+## 5. Demo script (stage)
 
----
+1. **Localization** — show Marathi (Mumbai); click **Delhi** → Hindi + Nehru Place store.
+2. **Festival** — **Diwali ON** → ribbon + whole-site recolor; **OFF** reverts.
+3. **Loyalty** — guest nudge → **Gold** → member greeting + perks → **Platinum**.
+4. **Category affinity** — **AC** → AC jumps to front of nav + rail + a "For You" hero; **TV** to generalize.
+5. **Reset demo** clears forced states.
 
-## 5. Going to production
+## 6. Production cleanup
 
-When this graduates from a demo, remove the presenter aid so the UI is driven **purely** by PE:
-
-- Delete the **DEMO-CONTROL layer** in the `VS_PE` script: the `SIM` map, `demoState()`/`setDemo()`
-  reads inside the `*Cfg()` resolvers, and the `buildDemoPanel()` call.
-- The appliers (`applyFestival`, `applyCity`, `applyLoyalty`, `applyCategory`) then run only on
-  values returned by `clevertap.getVariables()` + their in-code defaults.
-- Keep the `Category Viewed` / `onUserLogin` event wiring — that's what feeds your segments.
+Remove the presenter aid so the UI runs purely on PE: delete the **DEMO-CONTROL layer** in the
+`VS_PE` script (the `SIM` map, the `demoState()` reads in the `*Cfg()` resolvers, and the
+`buildDemoPanel()` call). Keep the `Category Viewed` / `onUserLogin` event wiring — that feeds your segments.
