@@ -19,30 +19,46 @@ already made in code, and a **stage-ready demo script**.
 
 | Item | Value |
 |---|---|
-| Web SDK version | **1.7.0 or higher** (Remote Config requires this) |
+| Web SDK version | **v1.11.10 or higher** (variable sync to dashboard requires this) |
 | Account ID (in code) | `WW6-988-RW7Z` — change in `vijaysales.html` `<head>` if you use a different demo account |
+| **Account Token + Region** | **REQUIRED for Remote Config.** Without them `syncVariables()` throws *"Account token is missing."* Find both at **Dashboard → Settings → Project**. Paste into the `token` and `region` fields in the `<head>` init. |
 | Test profile | Mark your own profile as a **Test Profile** in the dashboard (needed to sync & preview variables) |
 | `useIP` | Set to **`true`** in code (already done) so CleverTap derives **City** from IP for UC4 geo-segments |
+
+> **Note on the Account Token:** it's a *client-side* token (already visible on any site using
+> CleverTap), so it's not a server API secret — but don't commit the real value to a public repo.
+> Paste it locally for the demo, or inject it at deploy time.
 
 ---
 
 ## 1. Register the 4 variables on the dashboard
 
 The variables are already **defined in code** (`vijaysales.html` `<head>`, in the
-`clevertap.variables.push({...})` block). You now need them to exist on the dashboard so you
-can override their values per segment.
+`clevertap.variables.push({...})` block). **Defining them does NOT push them to the dashboard** —
+you must explicitly **sync** them once. Sync requires *all* of: SDK v1.11.10+, Account Token +
+Region set in init, your profile marked as Test, DEBUG log level, and no open draft.
 
-**Option A — Sync from the SDK (recommended, one-time):** temporarily add this in the browser
-console (or a throwaway script) while logged in as your **test profile**, in DEBUG mode:
+**Option A — One-click sync (built into the page):** set your `token`/`region` in the `<head>`,
+mark your profile as Test, then open the page as that profile with the sync flag:
+
+```
+vijaysales.html?ctsync=1
+```
+
+The page calls `setLogLevel(4)` + `syncVariables()` for you and logs the result to the console
+(`[VS_PE] ✅ Synced…`). Then remove the `?ctsync=1` flag for normal demos.
+
+**Option B — Manual console sync:** while loaded as your test profile, run:
 
 ```js
+clevertap.setLogLevel(4);                 // DEBUG mode (required for sync)
 clevertap.syncVariables(
   () => console.log('Sync successful — check Product Experiences > Variables'),
-  () => console.log('Sync failed — publish/dismiss any existing draft first')
+  () => console.log('Sync failed — set Account Token+Region, mark Test profile, publish/dismiss any draft')
 );
 ```
 
-**Option B — Create them manually** under **Product Experiences → Variables → Create**, using
+**Option C — Create them manually** under **Product Experiences → Variables → Create**, using
 the exact names, types and defaults below.
 
 | # | Variable name | Type | Default value (JSON) |
@@ -127,8 +143,10 @@ Everything below is **done** — listed so you know what changed and what to rev
 6. A single **`VS_PE` engine `<script>`** that fetches the variables and applies all 4 use cases,
    plus a **floating "Demo Controls" panel**.
 
-**The only thing you may want to change manually:** the **account ID** in the `<head>` if you
-demo on a different account, and (optionally) the `CATEGORY_META` image URLs / copy in the script.
+**What you MUST fill in manually before the dashboard flow works:** the **`region`** and
+**`token`** (Account Token) placeholders in the `<head>` init — without them Remote Config throws
+*"Account token is missing."* Optionally also change the **account ID** (if demoing on another
+account) and the `CATEGORY_META` image URLs / copy in the script.
 
 ---
 
