@@ -30,12 +30,10 @@
   //    CleverTap), but avoid committing the real value to a public repo — paste it here
   //    locally for the demo, or inject it at deploy time.
   var clevertap = {
-    event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [],
-    region: 'YOUR_REGION',       // ⬅️ e.g. 'in1', 'eu1', 'us1', 'sg1', 'aps3' (see Settings)
-    token:  'YOUR_ACCOUNT_TOKEN'  // ⬅️ paste your Account Token from Dashboard → Settings
+    event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], variables: [],
+    token:  '449-RRZ-7W7Z'  // ⬅️ paste your Account Token from Dashboard → Settings
   };
 
-  // Keep ONLY this single account.push line (account ID goes here; token/region go above).
   clevertap.account.push({ "id": "449-RRZ-7W7Z" });
   clevertap.privacy.push({ optOut: false });
   // CHANGED: useIP set to true (was false). The City/Language use case (UC4) relies on
