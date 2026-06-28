@@ -42,42 +42,38 @@
   clevertap.privacy.push({ useIP: true });
 
   /* ════════════════════════════════════════════════════════════════════════════════════
-     ║  CLEVERTAP PRODUCT EXPERIENCE (PE) — VARIABLE DEFAULTS                               ║
+     ║  CLEVERTAP PRODUCT EXPERIENCE (PE) — CONTENT VARIABLES (user-property driven)        ║
      ║                                                                                      ║
-     ║  These 11 FLAT variables drive the 4 demo use cases. The DEFAULT value here is used   ║
-     ║  when the dashboard has no override OR the user is not in a targeted segment. On the   ║
-     ║  dashboard you OVERRIDE them per-segment via a Product Experience — no code redeploy.  ║
+     ║  3 object variables, one per use case. The page pushes a USER PROPERTY on each        ║
+     ║  trigger; on the dashboard you write if/else on that property and set the variable    ║
+     ║  value (the JSON object) — so ALL content (text/subtext/image/colour) comes from PE.  ║
      ║                                                                                      ║
-     ║  IMPORTANT (verified against Web SDK v2.7.2 source):                                  ║
-     ║   • Variables are registered with clevertap.defineVariable(name, value) AFTER the SDK ║
-     ║     loads (in wzrk.onload below) — the pre-load `clevertap.variables.push()` queue is  ║
-     ║     NOT processed for variables.                                                       ║
-     ║   • We use FLAT primitives (string / boolean) only. Object variables are supported but ║
-     ║     REJECT nested arrays (variable.js:60), so flat values are the safe, simple choice. ║
-     ║     (Lists like loyalty perks are stored as a comma-separated string and split in JS.) ║
+     ║   Variable      User property            Object fields                                ║
+     ║   vs_reco       "Last Category Clicked"  { category, mainText, subText, image }        ║
+     ║   vs_loyalty    "Loyalty Tier"           { tierLabel, greeting, perks, accentColor }   ║
+     ║   vs_city       "Selected City"          { greeting, subText, storeCallout }           ║
      ║                                                                                      ║
-     ║  Variable NAMES must match EXACTLY what you create on the dashboard.                   ║
-     ║  See VIJAYSALES_PE_DEMO_SETUP.md for step-by-step dashboard setup.                     ║
+     ║  Notes (verified vs Web SDK v2.7.2 source):                                           ║
+     ║   • Registered with clevertap.defineVariable(name, obj) in wzrk.onload (the pre-load   ║
+     ║     clevertap.variables.push() queue is NOT processed for variables).                  ║
+     ║   • Objects are fine but must have NO nested arrays — perks is a comma-separated        ║
+     ║     string the page splits. Read back with synchronous clevertap.getVariables().       ║
+     ║   • Festival theme is deferred until these 3 work.                                     ║
      ╚════════════════════════════════════════════════════════════════════════════════════ */
   window.VS_PE_VARS = {
-    // ── UC1: Category Affinity ── value to surface on next visit; "" = none.
-    "vs_boosted_category":      "",                       // String: "Air Conditioners" | "TV & Entertainment" | "Microwave"
+    // Each use case = ONE object variable. The site pushes a USER PROPERTY on the trigger
+    // (click / tier / city); on the dashboard you write if/else on that property and set the
+    // object value below. Empty defaults = nothing shown until the dashboard provides content.
+    // (No nested arrays — perks is a comma-separated string the page splits.)
 
-    // ── UC2: Festival / Sale Theme ── marketing flips these to re-skin the site, no deploy.
-    "vs_festival_active":       false,                    // Boolean
-    "vs_festival_ribbon_text":  "🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI",  // String
-    "vs_festival_accent_color": "#d35400",                // String (hex)
+    // UC1 — driven by user property "Last Category Clicked"
+    "vs_reco":    { category: "", mainText: "", subText: "", image: "" },
 
-    // ── UC3: Login + Loyalty Tier ── set per tier segment; empty greeting = guest.
-    "vs_loyalty_tier_label":    "",                       // String: "Silver" | "Gold" | "Platinum"
-    "vs_loyalty_greeting":      "",                       // String
-    "vs_loyalty_perks":         "",                       // String: comma-separated, e.g. "Free installation,Priority delivery"
-    "vs_loyalty_accent_color":  "#b8860b",                // String (hex)
+    // UC3 — driven by user property "Loyalty Tier"
+    "vs_loyalty": { tierLabel: "", greeting: "", perks: "", accentColor: "#b8860b" },
 
-    // ── UC4: City / Language ── set per City geo-segment; default = Mumbai (Marathi).
-    "vs_city_greeting":         "नमस्कार मुंबई! 🙏",        // String
-    "vs_city_subtext":          "मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर",  // String
-    "vs_city_store_callout":    "Nearest store: Vijay Sales, Andheri West — 2.3 km"  // String
+    // UC4 — driven by user property "Selected City"
+    "vs_city":    { greeting: "", subText: "", storeCallout: "" }
   };
 
   (function () {
@@ -335,8 +331,7 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC2 — FESTIVAL / SALE THEME RIBBON
-     Content + colours come from PE variables `vs_festival_active` / `vs_festival_ribbon_text`
-     / `vs_festival_accent_color`. Hidden until marketing sets vs_festival_active=true.
+     DEFERRED for now (festival comes after UC1/UC3/UC4 work). Ribbon stays hidden.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div id="vs-festival-ribbon">
   <span id="vs-festival-text">🪔 Festival Sale</span>
@@ -411,8 +406,8 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC4 — CITY / LANGUAGE LOCALIZATION STRIP
-     Copy comes from PE variables `vs_city_greeting` / `vs_city_subtext` / `vs_city_store_callout`,
-     overridden per City geo-segment (Mumbai → Marathi, Delhi → Hindi). Falls back to defaults.
+     Copy comes from the `vs_city` object { greeting, subText, storeCallout }, set on the
+     dashboard via if/else on the "Selected City" user property the page pushes.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div class="vs-strip" id="vs-city-strip" style="display:none">
   <div class="vs-strip-inner">
@@ -426,23 +421,23 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC3 — LOGIN + LOYALTY-TIER STRIP
-     GUEST state = sign-in nudge. After login, the `vs_loyalty_*` variables (segment-targeted
-     by loyalty tier) drive the tier label, greeting, accent colour and perks chips.
+     GUEST state = sign-in nudge. The `vs_loyalty` object { tierLabel, greeting, perks,
+     accentColor } is set via if/else on the "Loyalty Tier" user property the page pushes.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div class="vs-strip" id="vs-loyalty-strip">
   <div class="vs-strip-inner">
     <span class="vs-tier-badge" id="vs-tier-badge" style="display:none"></span>
     <span class="vs-loyalty-greet" id="vs-loyalty-greet"></span>
     <span class="vs-perks" id="vs-perks"></span>
-    <button class="vs-signin-btn" id="vs-signin-btn" onclick="VS_PE.simulateLogin('Gold')">Sign In</button>
+    <button class="vs-signin-btn" id="vs-signin-btn" onclick="VS_PE.triggerTier('Gold')">Sign In</button>
   </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════════════════════════════
      UC1 — "RECOMMENDED FOR YOU" PERSONALIZED HERO
-     Shown only when `vs_boosted_category` is set (i.e. CleverTap has
-     learned this user's category affinity and a PE campaign pushed the value). The nav
-     bar + category rail are also re-ordered/highlighted by JS for the same category.
+     Content comes from the `vs_reco` object { category, mainText, subText, image }, set via
+     if/else on the "Last Category Clicked" user property the page pushes. Shown only when
+     vs_reco.mainText is non-empty; the nav + category rail are also re-ordered for vs_reco.category.
      ════════════════════════════════════════════════════════════════════════════════ -->
 <div id="vs-reco-hero">
   <div class="vs-reco-card">
@@ -973,441 +968,262 @@ footer{background:#fff;border-top:1px solid #e5e5e5;margin-top:24px}
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════════════════════════
-     ║  CLEVERTAP PRODUCT EXPERIENCE — DEMO ENGINE                                          ║
+     ║  CLEVERTAP PRODUCT EXPERIENCE — ENGINE (user-property driven)                        ║
      ║                                                                                      ║
-     ║  This single module reads the 4 PE variables defined in <head> and applies them to   ║
-     ║  the UI for the 4 use cases. It also renders a "Demo Controls" panel (bottom-left)    ║
-     ║  so you can switch states live & reliably on stage even if dashboard sync lags.       ║
+     ║  Flow for each use case (UC1 category, UC3 loyalty, UC4 city):                         ║
+     ║    1. A trigger fires → the page pushes a USER PROPERTY (clevertap.profile.push):      ║
+     ║         click category → "Last Category Clicked"                                       ║
+     ║         pick tier      → "Loyalty Tier"                                                 ║
+     ║         pick city      → "Selected City"                                                ║
+     ║    2. The page calls clevertap.fetchVariables() so PE re-evaluates the dashboard         ║
+     ║       if/else rules for that property and returns the matching object value.            ║
+     ║    3. The page reads the object (clevertap.getVariables()) and renders text/image/etc.  ║
      ║                                                                                      ║
-     ║  HOW VALUES ARE RESOLVED (per use case):                                              ║
-     ║     1. Demo-control override (localStorage)  ← presenter forces a state on stage      ║
-     ║     2. Live PE value from clevertap.getVariables()  ← real dashboard / segment value  ║
-     ║     3. defaultValue defined in <head>                                                 ║
-     ║                                                                                      ║
-     ║  ➤ FOR PRODUCTION: delete the DEMO-CONTROL layer (the SIM map, the demoState reads,    ║
-     ║    and the buildDemoPanel() call). The appliers then run purely on real PE values.    ║
+     ║  ALL content lives on the dashboard (per-property if/else). The code only renders it.  ║
+     ║  The "Triggers" panel (bottom-left) just fires the same user-property pushes for demo.  ║
+     ║  Festival theme is deferred until these 3 are working.                                 ║
      ╚════════════════════════════════════════════════════════════════════════════════════ -->
 <script>
 var VS_PE = (function () {
   "use strict";
 
-  /* The flat PE variable names this demo reads. Defaults live in window.VS_PE_VARS (<head>),
-     which is also what clevertap.defineVariable registers. Names must match the dashboard. */
-  // (Names are referenced directly via val('vs_...') in the resolvers below.)
+  /* 3 PE object variables (defaults in window.VS_PE_VARS). Read back with the synchronous
+     clevertap.getVariables(). Values are set on the dashboard via if/else on a USER PROPERTY
+     the page pushes (see the trigger* methods below). */
 
-  // Guest (logged-out) copy for UC3 — shown until a real login + tier segment applies.
+  // Guest (logged-out) copy for UC3 — shown when vs_loyalty has no greeting.
   var GUEST_GREETING = "Sign in for member prices, faster checkout & order tracking";
   var GUEST_PERKS = ["Member-only prices", "Faster checkout"];
 
-  /* Per-category presentation for UC1's "Recommended for you" hero + which nav link / rail
-     tile to boost. Keys are the category values your events emit (see wiring below). */
-  var CATEGORY_META = {
-    "Air Conditioners": {
-      nav: "Air Conditioners", rail: "Air Conditioners",
-      img: "https://s7ap1.scene7.com/is/image/vsproddmfinal/Ac_Fest?dpr=on,2&bfc=on",
-      title: "Beat the Heat — Top ACs picked for you",
-      sub: "Inverter Split ACs from ₹26,990 · No Cost EMI · Free Installation"
-    },
-    "TV & Entertainment": {
-      nav: "TV & Entertainment", rail: "Television",
-      img: "https://vsprod.Demosales.com/media/catalog/product/2/4/240934_1_.jpg?optimize=medium&fit=bounds&height=400&width=900",
-      title: "Big-screen entertainment, just for you",
-      sub: "4K QLED & Mini-LED Smart TVs · Up to 32% OFF"
-    },
-    "Microwave": {
-      nav: "Kitchen Appliances", rail: "",
-      img: "https://s7ap1.scene7.com/is/image/vsproddmfinal/Microwave_desktop?dpr=on,2&bfc=on",
-      title: "Cook smarter — Microwaves & Ovens for you",
-      sub: "Convection, Solo & Grill · Starting ₹6,499"
-    }
+  // UC1: which nav link / category-rail tile to boost for a given category value.
+  var CATEGORY_NAV = {
+    "Air Conditioners":   { nav: "Air Conditioners",   rail: "Air Conditioners" },
+    "TV & Entertainment": { nav: "TV & Entertainment", rail: "Television" },
+    "Microwave":          { nav: "Kitchen Appliances", rail: "" }
   };
 
-  /* ───────────────────────────────────────────────────────────────────────────────────
-     DEMO-CONTROL LAYER  (presenter aid — REMOVE for production)
-     `SIM` mimics the values the dashboard would return for each segment, so the presenter
-     can switch states instantly and reliably. In production these come from PE, not here.
-     ─────────────────────────────────────────────────────────────────────────────────── */
-  var SIM = {
-    festival: { active: true, name: "Diwali Dhamaka", ribbonText: "🪔 Diwali Dhamaka Sale — Up to 60% OFF + No Cost EMI on all Electronics", accentColor: "#d35400", headerBg: "#2a0a3a", countdownText: "Ends in 2 days" },
-    tiers: {
-      Silver:   { tier: "Silver",   greeting: "Welcome back! You're a Silver member", accentColor: "#94a3b8", perks: ["Free delivery", "Extended 1-yr warranty", "Member prices"], showPerksStrip: true },
-      Gold:     { tier: "Gold",     greeting: "Welcome back, Gold member 👑", accentColor: "#b8860b", perks: ["Free installation", "Priority delivery", "Extended warranty", "Exclusive Gold prices"], showPerksStrip: true },
-      Platinum: { tier: "Platinum", greeting: "Welcome back, Platinum member 💎", accentColor: "#111827", perks: ["Dedicated concierge", "Same-day delivery", "3-yr warranty", "Early sale access"], showPerksStrip: true }
-    },
-    cities: {
-      Mumbai:    { city: "Mumbai",    language: "Marathi", greeting: "नमस्कार मुंबई! 🙏", subText: "मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर", storeCallout: "Nearest store: Vijay Sales, Andheri West — 2.3 km", show: true },
-      Delhi:     { city: "Delhi",     language: "Hindi",   greeting: "नमस्ते दिल्ली! 🙏", subText: "दिल्ली में तेज़ डिलीवरी और नज़दीकी स्टोर", storeCallout: "Nearest store: Vijay Sales, Nehru Place — 1.8 km", show: true },
-      Bengaluru: { city: "Bengaluru", language: "Kannada", greeting: "ನಮಸ್ಕಾರ ಬೆಂಗಳೂರು! 🙏", subText: "ಬೆಂಗಳೂರಿನಲ್ಲಿ ವೇಗದ ಡೆಲಿವರಿ ಮತ್ತು ಹತ್ತಿರದ ಸ್ಟೋರ್", storeCallout: "Nearest store: Vijay Sales, Koramangala — 2.1 km", show: true }
-    }
-  };
-
-  var LS = 'vs_pe_demo';
-  function demoState() { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } }
-  function setDemo(patch) { var s = Object.assign(demoState(), patch); localStorage.setItem(LS, JSON.stringify(s)); return s; }
-  /* ─────────────────────── end DEMO-CONTROL layer header ─────────────────────────────── */
-
-  /* Live PE values fetched from the server (parsed objects), keyed by variable name. */
+  // Live PE values, keyed by variable name (objects). Filled from getVariables().
   var liveVars = {};
-
-  /* Read a single flat variable: live (server/fetched) value if present, else the <head>
-     default from window.VS_PE_VARS. getVariables() values are primitives — no parsing. */
-  function val(name) {
-    if (liveVars[name] !== undefined) return liveVars[name];
-    return (window.VS_PE_VARS && window.VS_PE_VARS[name] !== undefined) ? window.VS_PE_VARS[name] : undefined;
+  function pull() {
+    try { var all = clevertap.getVariables(); if (all) liveVars = all; }
+    catch (e) { console.warn('[VS_PE] getVariables error', e); }
+  }
+  // Return an object variable's value (falls back to the <head> default, else {}).
+  function vobj(name) {
+    var v = liveVars[name];
+    if ((!v || typeof v !== 'object') && window.VS_PE_VARS) v = window.VS_PE_VARS[name];
+    return (v && typeof v === 'object') ? v : {};
+  }
+  function perksFromString(p) {
+    return p ? String(p).split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
   }
 
-  /* ── View builders: demo override (SIM) > live PE value > <head> default ──────────────────
-     Each returns the object shape the matching applier expects. */
-  function festivalCfg() {
-    var d = demoState();
-    if (d.festival === 'on')  return { active: true, ribbonText: SIM.festival.ribbonText, accentColor: SIM.festival.accentColor, countdownText: SIM.festival.countdownText };
-    if (d.festival === 'off') return { active: false };
-    var active = val('vs_festival_active');
-    return { active: active === true || active === 'true',
-             ribbonText: val('vs_festival_ribbon_text'),
-             accentColor: val('vs_festival_accent_color') };
-  }
-  function cityCfg() {
-    var d = demoState();
-    if (d.city && SIM.cities[d.city]) { var c = SIM.cities[d.city]; return { show: true, greeting: c.greeting, subText: c.subText, storeCallout: c.storeCallout, city: c.city }; }
-    var g = val('vs_city_greeting');
-    return { show: !!(g && String(g).length), greeting: g, subText: val('vs_city_subtext'), storeCallout: val('vs_city_store_callout'), city: null };
-  }
-  function loyaltyCfg() {
-    var d = demoState();
-    if (d.loggedIn) {
-      if (d.tier && SIM.tiers[d.tier]) { var t = SIM.tiers[d.tier]; return { tier: t.tier, greeting: t.greeting, perks: t.perks, accentColor: t.accentColor }; }
-      // Live logged-in: read the flat loyalty vars set by the user's tier segment.
-      var perksStr = val('vs_loyalty_perks');
-      return {
-        tier: val('vs_loyalty_tier_label') || 'Member',
-        greeting: val('vs_loyalty_greeting') || 'Welcome back 👋',
-        perks: perksStr ? String(perksStr).split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [],
-        accentColor: val('vs_loyalty_accent_color')
-      };
-    }
-    return { tier: 'Guest', greeting: GUEST_GREETING, perks: GUEST_PERKS };  // guest
-  }
-  function categoryCfg() {
-    var d = demoState();
-    if (d.boostedCategory !== undefined && d.boostedCategory !== null)
-      return { boostedCategory: d.boostedCategory, headline: "Recommended for You" };  // demo override
-    return { boostedCategory: val('vs_boosted_category') || "", headline: "Recommended for You" };
-  }
-
-  /* ════════════════════════════ UC2 — FESTIVAL / SALE THEME ═══════════════════════════ */
-  function applyFestival(cfg) {
-    var ribbon = document.getElementById('vs-festival-ribbon');
-    var header = document.querySelector('header');
-    if (cfg && cfg.active) {
-      document.documentElement.style.setProperty('--vs-accent', cfg.accentColor || '#d35400');
-      document.getElementById('vs-festival-text').textContent = cfg.ribbonText || '🎉 Festival Sale';
-      document.getElementById('vs-festival-count').textContent = cfg.countdownText ? '⏳ ' + cfg.countdownText : '';
-      ribbon.style.display = 'block';
-      if (header) header.style.borderBottom = '2px solid ' + (cfg.accentColor || '#d35400');
-    } else {
-      document.documentElement.style.setProperty('--vs-accent', '#c0392b'); // back to brand red
-      ribbon.style.display = 'none';
-      if (header) header.style.borderBottom = '';
-    }
-  }
-
-  /* ════════════════════════════ UC4 — CITY / LANGUAGE STRIP ═══════════════════════════ */
-  function applyCity(cfg) {
-    var strip = document.getElementById('vs-city-strip');
-    if (cfg && cfg.show && cfg.greeting) {
-      document.getElementById('vs-city-greet').textContent = cfg.greeting;
-      document.getElementById('vs-city-sub').textContent   = cfg.subText || '';
-      document.getElementById('vs-city-store').innerHTML    = cfg.storeCallout ? ('📍 ' + cfg.storeCallout) : '';
-      strip.style.display = 'block';
-      // Also reflect the city in the header location widget.
-      var locCity = document.querySelector('.loc-city');
-      if (locCity && cfg.city) locCity.textContent = cfg.city;
-    } else {
-      strip.style.display = 'none';
-    }
-  }
-
-  /* ════════════════════════ UC3 — LOGIN + LOYALTY-TIER STRIP ══════════════════════════ */
-  function applyLoyalty(cfg) {
-    var strip   = document.getElementById('vs-loyalty-strip');
-    var badge   = document.getElementById('vs-tier-badge');
-    var greet   = document.getElementById('vs-loyalty-greet');
-    var perksEl = document.getElementById('vs-perks');
-    var btn     = document.getElementById('vs-signin-btn');
-    var isMember = cfg && cfg.tier && cfg.tier !== 'Guest';
-
-    greet.textContent = cfg.greeting || '';
-    perksEl.innerHTML = '';
-
-    if (isMember) {
-      strip.classList.add('member');
-      strip.style.display = 'block';
-      badge.style.display = 'inline-block';
-      badge.textContent = cfg.tier + ' Member';
-      badge.style.background = cfg.accentColor || 'var(--vs-accent)';
-      strip.querySelector('.vs-strip-inner').style.borderColor = cfg.accentColor || 'var(--vs-accent)';
-      (cfg.perks || []).forEach(function (p) {
-        var s = document.createElement('span'); s.className = 'vs-perk'; s.textContent = '✓ ' + p; perksEl.appendChild(s);
-      });
-      btn.textContent = 'Sign Out';
-      btn.onclick = function () { VS_PE.logout(); };
-    } else {
-      strip.classList.remove('member');
-      strip.style.display = 'block';
-      badge.style.display = 'none';
-      strip.querySelector('.vs-strip-inner').style.borderColor = '';
-      (cfg.perks || []).forEach(function (p) {
-        var s = document.createElement('span'); s.className = 'vs-perk'; s.textContent = p; perksEl.appendChild(s);
-      });
-      btn.textContent = 'Sign In';
-      btn.onclick = function () { VS_PE.simulateLogin('Gold'); };
-    }
-  }
-
-  /* ═════════════════════ UC1 — CATEGORY AFFINITY RE-RANKING ═══════════════════════════ */
-  function applyCategory(cfg) {
+  /* ═════════════════ UC1 — RECOMMENDATION HERO (content from vs_reco) ═══════════════════ */
+  function renderReco() {
+    var c = vobj('vs_reco');
     var hero = document.getElementById('vs-reco-hero');
-    // Reset previous boosts
+    // Clear any previous boost on nav links / category tiles.
     document.querySelectorAll('.nlink.vs-boosted').forEach(function (n) { n.classList.remove('vs-boosted'); });
-    document.querySelectorAll('.citem.vs-boosted').forEach(function (c) {
-      c.classList.remove('vs-boosted');
-      var t = c.querySelector('.vs-reco-tag'); if (t) t.remove();
+    document.querySelectorAll('.citem.vs-boosted').forEach(function (t) {
+      t.classList.remove('vs-boosted'); var x = t.querySelector('.vs-reco-tag'); if (x) x.remove();
     });
 
-    var key = cfg && cfg.boostedCategory;
-    var meta = key && CATEGORY_META[key];
-    if (!meta) { hero.style.display = 'none'; return; }
-
-    // 1) Personalized hero
-    document.getElementById('vs-reco-img').src = meta.img;
-    document.getElementById('vs-reco-title').textContent = meta.title;
-    document.getElementById('vs-reco-sub').textContent = meta.sub;
-    document.getElementById('vs-reco-eyebrow-txt').textContent = (cfg.headline || 'Recommended for You') + ' · ' + key;
-    document.getElementById('vs-reco-cta').onclick = function () {
-      clevertap.event.push("Recommended Hero Clicked", { "Category": key });
-    };
+    if (!c.mainText) { hero.style.display = 'none'; return; }   // nothing from PE yet
+    document.getElementById('vs-reco-img').src = c.image || '';
+    document.getElementById('vs-reco-title').textContent = c.mainText;
+    document.getElementById('vs-reco-sub').textContent = c.subText || '';
+    document.getElementById('vs-reco-eyebrow-txt').textContent = 'Recommended for You' + (c.category ? ' · ' + c.category : '');
+    document.getElementById('vs-reco-cta').onclick = function () { clevertap.event.push("Recommended Hero Clicked", { "Category": c.category || '' }); };
     hero.style.display = 'block';
 
-    // 2) Re-order + highlight the matching NAV link (move to front of nav)
-    var navInner = document.querySelector('.nav-inner');
-    if (navInner && meta.nav) {
-      document.querySelectorAll('.nav-inner .nlink').forEach(function (link) {
-        if (link.textContent.trim() === meta.nav) {
-          link.classList.add('vs-boosted');
-          navInner.insertBefore(link, navInner.firstChild);
-        }
+    var meta = CATEGORY_NAV[c.category];
+    if (meta) {
+      var navInner = document.querySelector('.nav-inner');
+      if (navInner && meta.nav) document.querySelectorAll('.nav-inner .nlink').forEach(function (link) {
+        if (link.textContent.trim() === meta.nav) { link.classList.add('vs-boosted'); navInner.insertBefore(link, navInner.firstChild); }
       });
-    }
-
-    // 3) Re-order + highlight the matching CATEGORY RAIL tile (move to front + badge)
-    var catInner = document.querySelector('.cat-inner');
-    if (catInner && meta.rail) {
-      document.querySelectorAll('.cat-inner .citem').forEach(function (tile) {
-        var label = tile.querySelector('span');
-        if (label && label.textContent.trim() === meta.rail) {
+      var catInner = document.querySelector('.cat-inner');
+      if (catInner && meta.rail) document.querySelectorAll('.cat-inner .citem').forEach(function (tile) {
+        var l = tile.querySelector('span');
+        if (l && l.textContent.trim() === meta.rail) {
           tile.classList.add('vs-boosted');
-          var tag = document.createElement('span'); tag.className = 'vs-reco-tag'; tag.textContent = 'FOR YOU';
-          tile.appendChild(tag);
+          var tag = document.createElement('span'); tag.className = 'vs-reco-tag'; tag.textContent = 'FOR YOU'; tile.appendChild(tag);
           catInner.insertBefore(tile, catInner.firstChild);
         }
       });
     }
   }
 
-  /* ──────────────────────────────── Render everything ─────────────────────────────────── */
-  function renderAll() {
-    applyFestival(festivalCfg());
-    applyCity(cityCfg());
-    applyLoyalty(loyaltyCfg());
-    applyCategory(categoryCfg());
-  }
-
-  /* Pull all current variable values into liveVars. getVariables() is SYNCHRONOUS and takes
-     NO callback — it returns the values (server-fetched, else defaults) from local storage. */
-  function pullLiveVars() {
-    try {
-      var all = clevertap.getVariables();        // synchronous, no callback, returns {name: value}
-      if (all) { Object.keys(all).forEach(function (k) { liveVars[k] = all[k]; }); }
-    } catch (e) { console.warn('[VS_PE] getVariables error', e); }
-  }
-
-  /* ───────── Fetch live PE values from CleverTap, then render ──────────────────────────────
-     Polls until the SDK has loaded AND variables are defined (defineVariable runs in
-     wzrk.onload), then fetches server values and renders. */
-  function fetchAndRender(tries) {
-    tries = tries || 0;
-    var ready = typeof clevertap !== 'undefined' &&
-                typeof clevertap.fetchVariables === 'function' &&
-                window.__vsVarsDefined === true;
-    if (!ready) {
-      if (tries < 25) { setTimeout(function () { fetchAndRender(tries + 1); }, 300); }
-      else { renderAll(); } // SDK never came up (e.g. offline) — show defaults/demo state
-      return;
+  /* ═════════════════ UC3 — LOYALTY STRIP (content from vs_loyalty) ══════════════════════ */
+  function renderLoyalty() {
+    var c = vobj('vs_loyalty');
+    var strip = document.getElementById('vs-loyalty-strip'), badge = document.getElementById('vs-tier-badge'),
+        greet = document.getElementById('vs-loyalty-greet'), perksEl = document.getElementById('vs-perks'),
+        btn = document.getElementById('vs-signin-btn');
+    perksEl.innerHTML = ''; strip.style.display = 'block';
+    var isMember = !!(c.greeting || c.tierLabel);
+    if (isMember) {
+      strip.classList.add('member');
+      badge.style.display = 'inline-block';
+      badge.textContent = (c.tierLabel || 'Member') + ' Member';
+      badge.style.background = c.accentColor || 'var(--vs-accent)';
+      strip.querySelector('.vs-strip-inner').style.borderColor = c.accentColor || 'var(--vs-accent)';
+      greet.textContent = c.greeting || 'Welcome back 👋';
+      perksFromString(c.perks).forEach(function (p) { var s = document.createElement('span'); s.className = 'vs-perk'; s.textContent = '✓ ' + p; perksEl.appendChild(s); });
+      btn.textContent = 'Sign Out'; btn.onclick = function () { VS_PE.logout(); };
+    } else {
+      strip.classList.remove('member');
+      badge.style.display = 'none';
+      strip.querySelector('.vs-strip-inner').style.borderColor = '';
+      greet.textContent = GUEST_GREETING;
+      GUEST_PERKS.forEach(function (p) { var s = document.createElement('span'); s.className = 'vs-perk'; s.textContent = p; perksEl.appendChild(s); });
+      btn.textContent = 'Sign In'; btn.onclick = function () { VS_PE.triggerTier('Gold'); };
     }
-    try {
-      clevertap.fetchVariables(function () {   // callback fires when the server responds
-        pullLiveVars();
-        console.log('[VS_PE] Live PE variables:', liveVars);
-        renderAll();
-      });
-      // Re-render automatically if the dashboard pushes a new value mid-session.
-      if (clevertap.addVariablesChangedCallback) {
-        clevertap.addVariablesChangedCallback(function () { pullLiveVars(); renderAll(); });
-      }
-    } catch (e) { console.warn('[VS_PE] fetch error', e); renderAll(); }
   }
 
-  /* ───────── Affinity capture: fire CleverTap events on category interaction ───────────
-     These events are what you build UC1's segments on (e.g. "viewed Air Conditioners
-     category ≥2 times in 7 days"). A PE experience then sets vs_boosted_category for that
-     segment, and the boosted UI appears on the user's NEXT visit. */
-  function wireAffinityEvents() {
+  /* ═════════════════ UC4 — CITY STRIP (content from vs_city) ════════════════════════════ */
+  function renderCity() {
+    var c = vobj('vs_city');
+    var strip = document.getElementById('vs-city-strip');
+    if (c.greeting) {
+      document.getElementById('vs-city-greet').textContent = c.greeting;
+      document.getElementById('vs-city-sub').textContent = c.subText || '';
+      document.getElementById('vs-city-store').innerHTML = c.storeCallout ? ('📍 ' + c.storeCallout) : '';
+      strip.style.display = 'block';
+    } else { strip.style.display = 'none'; }
+  }
+
+  function renderAll() { renderReco(); renderLoyalty(); renderCity(); }
+
+  /* Read current values + render. Call after pushing a user property so PE re-evaluates. */
+  function fetchThenRender() {
+    if (typeof clevertap !== 'undefined' && clevertap.fetchVariables) {
+      clevertap.fetchVariables(function () { pull(); console.log('[VS_PE] PE values:', liveVars); renderAll(); });
+    } else { renderAll(); }
+  }
+
+  /* Poll until the SDK has loaded AND variables are defined (defineVariable runs in
+     wzrk.onload), then do the initial fetch + register the live-change callback. */
+  function startLive(tries) {
+    tries = tries || 0;
+    var ready = typeof clevertap !== 'undefined' && typeof clevertap.fetchVariables === 'function' && window.__vsVarsDefined === true;
+    if (!ready) { if (tries < 25) setTimeout(function () { startLive(tries + 1); }, 300); else renderAll(); return; }
+    if (clevertap.addVariablesChangedCallback) clevertap.addVariablesChangedCallback(function () { pull(); renderAll(); });
+    fetchThenRender();
+  }
+
+  /* Real category clicks on the page push the "Last Category Clicked" user property (UC1). */
+  function wireCategoryClicks() {
     document.querySelectorAll('.nav-inner .nlink').forEach(function (link) {
-      link.addEventListener('click', function () {
-        clevertap.event.push("Category Viewed", { "Category": link.textContent.trim(), "Source": "Top Nav" });
-      });
+      link.addEventListener('click', function (e) { e.preventDefault(); VS_PE.triggerCategory(link.textContent.trim(), 'Top Nav'); });
     });
     document.querySelectorAll('.cat-inner .citem').forEach(function (tile) {
-      var label = tile.querySelector('span');
-      tile.addEventListener('click', function () {
-        clevertap.event.push("Category Viewed", { "Category": label ? label.textContent.trim() : "", "Source": "Category Rail" });
-      });
+      var l = tile.querySelector('span');
+      tile.addEventListener('click', function (e) { e.preventDefault(); VS_PE.triggerCategory(l ? l.textContent.trim() : '', 'Category Rail'); });
     });
   }
 
-  /* ═══════════════════════════════ PUBLIC (demo controls) ═════════════════════════════ */
+  /* ═══════════════════════════════ PUBLIC API ═════════════════════════════════════════ */
   return {
     init: function () {
-      wireAffinityEvents();
-      buildDemoPanel();
-      // First render with defaults immediately (no blank flash), then refine with live PE.
-      // fetchAndRender polls for SDK readiness itself, so no fixed-timeout race here.
-      renderAll();
-      fetchAndRender();
+      wireCategoryClicks();
+      buildPanel();
+      renderAll();   // defaults (hero/city hidden, guest strip) until live values arrive
+      startLive();
 
-      // ONE-TIME variable registration: open this page as your TEST PROFILE with ?ctsync=1
-      // (e.g. vijaysales.html?ctsync=1) to push the variable DEFINITIONS to the dashboard.
-      // Requires Account Token + Region in the init above. Remove the flag for normal demos.
+      // ONE-TIME variable registration: open as your TEST PROFILE with ?ctsync=1 to push the
+      // variable DEFINITIONS to the dashboard. Requires Account Token + Region in the init above.
       if (location.search.indexOf('ctsync') > -1 || location.hash.indexOf('ctsync') > -1) {
         window.addEventListener('load', function () { setTimeout(function () { VS_PE.syncToDashboard(); }, 2500); });
       }
     },
 
-    /* ONE-TIME: register the variable DEFINITIONS on the dashboard so you can override them
-       per-segment. Needs: Account Token + Region in init, profile marked as Test, DEBUG level. */
+    /* UC1 — push the "Last Category Clicked" user property, then fetch the matching vs_reco. */
+    triggerCategory: function (cat, source) {
+      if (!cat) return;
+      clevertap.profile.push({ "Site": { "Last Category Clicked": cat } });
+      clevertap.event.push("Category Viewed", { "Category": cat, "Source": source || 'Demo' });
+      fetchThenRender();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    /* UC3 — push the "Loyalty Tier" user property, then fetch the matching vs_loyalty. */
+    triggerTier: function (tier) {
+      clevertap.profile.push({ "Site": { "Loyalty Tier": tier } });
+      clevertap.event.push("Logged In", { "Loyalty Tier": tier });
+      fetchThenRender();
+    },
+    logout: function () {
+      clevertap.profile.push({ "Site": { "Loyalty Tier": "" } });   // no tier → guest
+      clevertap.event.push("Logged Out");
+      fetchThenRender();
+    },
+
+    /* UC4 — push the "Selected City" user property, then fetch the matching vs_city. */
+    triggerCity: function (city) {
+      clevertap.profile.push({ "Site": { "Selected City": city } });
+      clevertap.event.push("City Selected", { "City": city });
+      var loc = document.querySelector('.loc-city'); if (loc) loc.textContent = city;
+      fetchThenRender();
+    },
+
+    /* ONE-TIME: register the 3 variable DEFINITIONS on the dashboard. Needs Account Token +
+       Region in init, profile marked as Test, DEBUG log level, and no open draft. */
     syncToDashboard: function () {
       if (typeof clevertap === 'undefined' || !clevertap.syncVariables) {
         console.warn('[VS_PE] syncVariables unavailable — is the Web SDK v1.7.0+ loaded?');
         return;
       }
-      try { if (clevertap.setLogLevel) clevertap.setLogLevel(4); } catch (e) {} // DEBUG mode (required for sync)
+      try { if (clevertap.setLogLevel) clevertap.setLogLevel(4); } catch (e) {}
       console.log('[VS_PE] Syncing variable definitions to dashboard…');
       clevertap.syncVariables(
         function () { console.log('[VS_PE] ✅ Synced. Open Dashboard → Product Experiences → Variables.'); },
-        function (err) { console.warn('[VS_PE] ❌ Sync failed:', err, '\n→ Checklist: Account Token + Region set in init? Profile marked as Test? Any open draft to publish/discard first?'); }
+        function (err) { console.warn('[VS_PE] ❌ Sync failed:', err, '\n→ token + region set? profile marked Test? open draft to discard?'); }
       );
     },
-
-    /* UC3 — login. Identifies the user & re-fetches PE so segment-targeted (tier) values apply. */
-    simulateLogin: function (tier) {
-      setDemo({ loggedIn: true, tier: tier || 'Gold' });
-      clevertap.onUserLogin.push({ "Site": { "Name": "Demo Member", "Identity": "demo_" + (tier || 'Gold'), "Loyalty Tier": tier || 'Gold' } });
-      clevertap.event.push("Logged In", { "Loyalty Tier": tier || 'Gold' });
-      // A profile change can move the user into a new segment → re-fetch PE values.
-      if (clevertap.fetchVariables) { clevertap.fetchVariables(function () { pullLiveVars(); renderAll(); }); }
-      renderAll();
-    },
-    logout: function () {
-      setDemo({ loggedIn: false, tier: null });
-      clevertap.event.push("Logged Out");
-      renderAll();
-    },
-    setCity: function (city) { setDemo({ city: city }); clevertap.event.push("City Switched", { "City": city }); renderAll(); },
-    toggleFestival: function (on) { setDemo({ festival: on ? 'on' : 'off' }); renderAll(); },
-    /* UC1 — simulate the affinity click + show the "next-visit" boosted UI immediately. */
-    simulateCategory: function (cat) {
-      clevertap.event.push("Category Viewed", { "Category": cat, "Source": "Demo" });
-      setDemo({ boostedCategory: cat });
-      renderAll();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    clearCategory: function () { setDemo({ boostedCategory: "" }); renderAll(); },
-    reset: function () { localStorage.removeItem(LS); location.reload(); }
+    reload: function () { location.reload(); }
   };
 
-  /* ──────────────────────────── Demo Controls panel (UI) ──────────────────────────────── */
-  function buildDemoPanel() {
-    var d = demoState();
+  /* ─────────── Trigger panel: each button writes a USER PROPERTY + re-fetches PE ─────────── */
+  function buildPanel() {
     var panel = document.createElement('div');
     panel.id = 'vs-demo-panel';
     panel.innerHTML =
-      '<div class="vs-dp-head" id="vs-dp-head"><span><span class="vs-dp-dot"></span>CleverTap PE — Demo Controls</span><span id="vs-dp-toggle">▾</span></div>' +
+      '<div class="vs-dp-head" id="vs-dp-head"><span><span class="vs-dp-dot"></span>CleverTap PE — Triggers</span><span id="vs-dp-toggle">▾</span></div>' +
       '<div class="vs-dp-body">' +
-        '<div class="vs-dp-group"><h5>UC1 · Category affinity</h5><div class="vs-dp-row">' +
+        '<div class="vs-dp-group"><h5>UC1 · Category → "Last Category Clicked"</h5><div class="vs-dp-row">' +
           '<button class="vs-dp-btn" data-cat="Air Conditioners">AC</button>' +
           '<button class="vs-dp-btn" data-cat="TV & Entertainment">TV</button>' +
           '<button class="vs-dp-btn" data-cat="Microwave">Microwave</button>' +
-          '<button class="vs-dp-btn" data-cat="">Clear</button>' +
-        '</div><div class="vs-dp-note">Simulates a category click → boosts it like a returning visit.</div></div>' +
-
-        '<div class="vs-dp-group"><h5>UC2 · Festival theme</h5><div class="vs-dp-row">' +
-          '<button class="vs-dp-btn" data-fest="on">Diwali ON</button>' +
-          '<button class="vs-dp-btn" data-fest="off">OFF</button>' +
         '</div></div>' +
 
-        '<div class="vs-dp-group"><h5>UC3 · Login &amp; loyalty tier</h5><div class="vs-dp-row">' +
+        '<div class="vs-dp-group"><h5>UC3 · "Loyalty Tier"</h5><div class="vs-dp-row">' +
           '<button class="vs-dp-btn" data-tier="Silver">Silver</button>' +
           '<button class="vs-dp-btn" data-tier="Gold">Gold</button>' +
           '<button class="vs-dp-btn" data-tier="Platinum">Platinum</button>' +
           '<button class="vs-dp-btn" data-logout="1">Log out</button>' +
         '</div></div>' +
 
-        '<div class="vs-dp-group"><h5>UC4 · City / language</h5><div class="vs-dp-row">' +
+        '<div class="vs-dp-group"><h5>UC4 · "Selected City"</h5><div class="vs-dp-row">' +
           '<button class="vs-dp-btn" data-city="Mumbai">Mumbai</button>' +
           '<button class="vs-dp-btn" data-city="Delhi">Delhi</button>' +
           '<button class="vs-dp-btn" data-city="Bengaluru">Bengaluru</button>' +
         '</div></div>' +
 
-        '<button class="vs-dp-reset" id="vs-dp-reset">Reset demo</button>' +
+        '<div class="vs-dp-note">Each button writes a user property &amp; re-fetches PE. The values shown come from your dashboard if/else rules.</div>' +
+        '<button class="vs-dp-reset" id="vs-dp-reset">Reload page</button>' +
       '</div>';
     document.body.appendChild(panel);
 
-    // Restore collapsed pref
-    if (d._collapsed) panel.classList.add('collapsed');
-
     document.getElementById('vs-dp-head').addEventListener('click', function () {
       panel.classList.toggle('collapsed');
-      setDemo({ _collapsed: panel.classList.contains('collapsed') });
       document.getElementById('vs-dp-toggle').textContent = panel.classList.contains('collapsed') ? '▴' : '▾';
     });
-
-    panel.querySelectorAll('[data-cat]').forEach(function (b) {
-      b.addEventListener('click', function () { b.getAttribute('data-cat') ? VS_PE.simulateCategory(b.getAttribute('data-cat')) : VS_PE.clearCategory(); refreshActive(); });
-    });
-    panel.querySelectorAll('[data-fest]').forEach(function (b) {
-      b.addEventListener('click', function () { VS_PE.toggleFestival(b.getAttribute('data-fest') === 'on'); refreshActive(); });
-    });
-    panel.querySelectorAll('[data-tier]').forEach(function (b) {
-      b.addEventListener('click', function () { VS_PE.simulateLogin(b.getAttribute('data-tier')); refreshActive(); });
-    });
-    panel.querySelectorAll('[data-logout]').forEach(function (b) {
-      b.addEventListener('click', function () { VS_PE.logout(); refreshActive(); });
-    });
-    panel.querySelectorAll('[data-city]').forEach(function (b) {
-      b.addEventListener('click', function () { VS_PE.setCity(b.getAttribute('data-city')); refreshActive(); });
-    });
-    document.getElementById('vs-dp-reset').addEventListener('click', function () { VS_PE.reset(); });
-
-    refreshActive();
-    function refreshActive() {
-      var s = demoState();
-      panel.querySelectorAll('.vs-dp-btn').forEach(function (b) { b.classList.remove('on'); });
-      if (s.boostedCategory) { var cb = panel.querySelector('[data-cat="' + s.boostedCategory + '"]'); if (cb) cb.classList.add('on'); }
-      if (s.festival === 'on') { var fb = panel.querySelector('[data-fest="on"]'); if (fb) fb.classList.add('on'); }
-      if (s.loggedIn && s.tier) { var tb = panel.querySelector('[data-tier="' + s.tier + '"]'); if (tb) tb.classList.add('on'); }
-      var city = (s.city || 'Mumbai'); var ci = panel.querySelector('[data-city="' + city + '"]'); if (ci) ci.classList.add('on');
-    }
+    panel.querySelectorAll('[data-cat]').forEach(function (b) { b.addEventListener('click', function () { VS_PE.triggerCategory(b.getAttribute('data-cat'), 'Demo'); }); });
+    panel.querySelectorAll('[data-tier]').forEach(function (b) { b.addEventListener('click', function () { VS_PE.triggerTier(b.getAttribute('data-tier')); }); });
+    panel.querySelectorAll('[data-logout]').forEach(function (b) { b.addEventListener('click', function () { VS_PE.logout(); }); });
+    panel.querySelectorAll('[data-city]').forEach(function (b) { b.addEventListener('click', function () { VS_PE.triggerCity(b.getAttribute('data-city')); }); });
+    document.getElementById('vs-dp-reset').addEventListener('click', function () { VS_PE.reload(); });
   }
 })();
 
