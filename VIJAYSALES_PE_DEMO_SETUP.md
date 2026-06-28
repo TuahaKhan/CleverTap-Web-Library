@@ -20,8 +20,10 @@ Scope now: **UC1 Category**, **UC3 Loyalty**, **UC4 City**. Festival is deferred
 | UC4 | `vs_city` | `Selected City` | `greeting`, `subText`, `storeCallout` |
 
 The page registers these (empty defaults) via `clevertap.defineVariable(name, obj)` in `wzrk.onload`,
-and reads them with the synchronous `clevertap.getVariables()`. Objects are used (no nested arrays —
-`perks` is a comma-separated string the page splits).
+and reads them with the synchronous `clevertap.getVariables()`. **The variable can be either an
+Object/map type OR a String type holding the JSON text — the page handles both** (it `JSON.parse`s
+the value when CleverTap returns it as a string, which is what String-type variables do). No nested
+arrays — `perks` is a comma-separated string the page splits.
 
 ---
 
@@ -69,11 +71,12 @@ variable → add a segment/condition on the user property → set the object val
 ### UC4 — `vs_city`, branch on `Selected City`
 | If `Selected City` = | Set `vs_city` to |
 |---|---|
-| `Mumbai` | `{"greeting":"नमस्कार मुंबई! 🙏","subText":"मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर","storeCallout":"Nearest store: Vijay Sales, Andheri West — 2.3 km"}` |
-| `Delhi` | `{"greeting":"नमस्ते दिल्ली! 🙏","subText":"दिल्ली में तेज़ डिलीवरी और नज़दीकी स्टोर","storeCallout":"Nearest store: Vijay Sales, Nehru Place — 1.8 km"}` |
-| `Bengaluru` | `{"greeting":"ನಮಸ್ಕಾರ ಬೆಂಗಳೂರು! 🙏","subText":"ಬೆಂಗಳೂರಿನಲ್ಲಿ ವೇಗದ ಡೆಲಿವರಿ ಮತ್ತು ಹತ್ತಿರದ ಸ್ಟೋರ್","storeCallout":"Nearest store: Vijay Sales, Koramangala — 2.1 km"}` |
+| `Mumbai` | `{"city":"Mumbai","greeting":"नमस्कार मुंबई! 🙏","subText":"मुंबईत जलद डिलिव्हरी आणि जवळचे स्टोअर","storeCallout":"Nearest store: Vijay Sales, Andheri West — 2.3 km"}` |
+| `Delhi` | `{"city":"Delhi","greeting":"नमस्ते दिल्ली! 🙏","subText":"दिल्ली में तेज़ डिलीवरी और नज़दीकी स्टोर","storeCallout":"Nearest store: Vijay Sales, Nehru Place — 1.8 km"}` |
+| `Bengaluru` | `{"city":"Bengaluru","greeting":"ನಮಸ್ಕಾರ ಬೆಂಗಳೂರು! 🙏","subText":"ಬೆಂಗಳೂರಿನಲ್ಲಿ ವೇಗದ ಡೆಲಿವರಿ ಮತ್ತು ಹತ್ತಿರದ ಸ್ಟೋರ್","storeCallout":"Nearest store: Vijay Sales, Koramangala — 2.1 km"}` |
 
-> No match → empty greeting → the city strip stays hidden.
+> Include the `"city"` field so the page can confirm the PE value matches the selected city
+> (without it, the page just shows its instant local copy). No match → city strip hidden.
 
 ---
 
@@ -90,6 +93,12 @@ variable → add a segment/condition on the user property → set the object val
 
 Because targeting is on a **user property** (not slow segment membership), the new value comes back
 on the very next `fetchVariables()` — which the page calls immediately after the push.
+
+**Speed (important for the demo):** the page does NOT wait for CleverTap. On every trigger it renders
+**instantly from a local content map** (which mirrors the dashboard JSON), then fetches the PE value
+in the background and swaps it in when it arrives. So the UI is always instant; if CleverTap is slow
+or a value is missing/invalid, the local copy simply stays. Selections persist (localStorage), so a
+reload is instant too. The console still logs `[VS_PE] PE values: {...}` so you can prove the round-trip.
 
 ## 5. Demo / testing
 - The **"CleverTap PE — Triggers"** panel (bottom-left) fires the same user-property pushes, so you
